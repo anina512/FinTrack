@@ -21,5 +21,5 @@ FinTrack is a personal finance tracker and budgeting app designed to help users 
   - Member 2: [Ganesh Chowdary Manne (UFID: 37555930)](https://github.com/gmanne7)
 
 - **Back-End Engineers**
-  - Member 3: [Name] ([GitHub Profile Link])
-  - Member 4: [Name] ([GitHub Profile Link])
+  - Member 3: [Bhanuteja Kanaparthi (UFID: 76647877)] (https://github.com/Bteja272)
+  - Member 4: [Pavan Prudhvi Madhamsetty (UFID: 71745585)] (https://github.com/pavanprudhvi02)
