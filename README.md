@@ -17,8 +17,8 @@ FinTrack is a personal finance tracker and budgeting app designed to help users 
 ## Contributors
 
 - **Front-End Engineers**
-  - Member 1: [Name] ([GitHub Profile Link])
-  - Member 2: [Name] ([GitHub Profile Link])
+  - Member 1: [Anina Pillai] ([https://github.com/anina512/])
+  - Member 2: [Ganesh Chowdary Manne] ([https://github.com/gmanne7])
 
 - **Back-End Engineers**
   - Member 3: [Name] ([GitHub Profile Link])
