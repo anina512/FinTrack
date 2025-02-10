@@ -2,14 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
-  imports: [MatButtonModule, MatInputModule, MatFormFieldModule, CommonModule, MatFormField ]
+  imports: [MatButtonModule, MatInputModule, MatFormFieldModule, CommonModule, MatFormField, MatCardModule, ReactiveFormsModule]
 })
 export class RegisterComponent {
   registerForm: FormGroup;
