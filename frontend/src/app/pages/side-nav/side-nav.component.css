@@ -1,0 +1,75 @@
+/* Add this to your CSS file */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+body {
+  padding-left: 170px;  /* Adjust content padding to prevent sidebar overlap */
+  margin: 0;
+  min-height: 100vh;
+  background-color: #f0f2f5;  /* Optional: light background for contrast */
+}
+
+.side-nav {
+  width: 160px;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  height: calc(100% - 60px);  /* Full height minus header */
+  background: linear-gradient(180deg, #444 0%, #333 100%);
+  color: white;
+  padding-top: 20px;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+  border-right: 2px solid #222;
+  z-index: 1000;
+}
+
+.side-nav ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.side-nav li {
+  transition: background-color 0.2s ease;
+}
+
+.side-nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  text-decoration: none;
+  padding: 14px 20px;
+  font-size: 0.95em;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.side-nav i {
+  width: 24px;
+  text-align: center;
+  font-size: 1.1em;
+  color: #ddd;
+  transition: color 0.3s ease;
+}
+
+.side-nav a:hover {
+  background-color: #575757;
+  padding-left: 25px;
+  transform: translateX(5px);
+}
+
+.side-nav a:hover i {
+  color: #fff;
+}
+
+/* Active state styling */
+.side-nav a.active {
+  background-color: #666;
+  border-left: 4px solid #00b4d8;
+  padding-left: 16px;
+}
+
+.side-nav a.active i {
+  color: #00b4d8;
+}
