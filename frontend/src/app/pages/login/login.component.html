@@ -1,0 +1,33 @@
+<div class="login-container">
+    <mat-card class="login-card">
+      <mat-card-title class="title">Login</mat-card-title>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        
+        <mat-form-field class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email">
+        </mat-form-field>
+        <div *ngIf="loginForm.controls['email'].invalid && loginForm.controls['email'].touched" class="error">
+          Invalid email.
+        </div>
+    
+        <mat-form-field class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="password">
+        </mat-form-field>
+        <div *ngIf="loginForm.controls['password'].invalid && loginForm.controls['password'].touched" class="error">
+          Invalid password.
+        </div>
+    
+        <button mat-raised-button color="primary" type="submit" class="submit-btn">Login</button>
+        
+        <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+      </form>
+      <p>Don't have an account? 
+        <a (click)="goToRegister()" class="register-link">Register here</a>
+      </p>      
+    </mat-card>    
+  </div>
+  
+
+  
