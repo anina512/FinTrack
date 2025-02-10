@@ -1,0 +1,94 @@
+<div class="dashboard">
+    <div class="content">
+      <div class="main-section">
+        <!-- Left Column -->
+        <div class="left-column">
+          <!-- Stats Cards -->
+          <div class="stats-section">
+            <!-- Income Card -->
+            <div class="card income-card">
+              <h2><i class="fas fa-wallet"></i> Income</h2>
+              <div class="chart-container doughnut-chart">
+                <canvas id="incomeChart"></canvas>
+              </div>
+              <div class="card-footer">
+                <p>${{ income.toLocaleString() }}</p>
+                <small>+2.5% compared to last year</small>
+              </div>
+              <div class="button-container">
+                <button class="btn add-income">
+                  <i class="fas fa-plus-circle"></i> Add Income
+                </button>
+              </div>
+            </div>
+  
+            <!-- Expenses Card -->
+            <div class="card expenses-card">
+              <h2><i class="fas fa-receipt"></i> Expenses</h2>
+              <div class="chart-container doughnut-chart">
+                <canvas id="expensesChart"></canvas>
+              </div>
+              <div class="card-footer">
+                <p>${{ expenses.toLocaleString() }}</p>
+                <small>-1.8% compared to last year</small>
+              </div>
+              <div class="button-container">
+                <button class="btn add-expense">
+                  <i class="fas fa-minus-circle"></i> Add Expense
+                </button>
+              </div>
+            </div>
+  
+            <!-- Savings Card -->
+            <div class="card savings-card">
+              <h2><i class="fas fa-piggy-bank"></i> Savings</h2>
+              <div class="chart-container doughnut-chart">
+                <canvas id="savingsChart"></canvas>
+              </div>
+              <div class="card-footer">
+                <p>${{ savings.toLocaleString() }}</p>
+                <small>3.5% compared to last year</small>
+              </div>
+              <div class="button-container">
+                <button class="btn add-budget">
+                  <i class="fas fa-chart-pie"></i> Add Budget
+                </button>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Weekly Expenses -->
+          <div class="bottom-section">
+            <div class="card weekly-expenses-card">
+              <h2><i class="fas fa-chart-line"></i> Weekly Expenses</h2>
+              <div class="chart-container bar-chart">
+                <canvas id="weeklyExpensesChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Right Column -->
+        <div class="right-column">
+          <div class="card upcoming-payments">
+            <h2><i class="fas fa-calendar-alt"></i> Upcoming Payments</h2>
+            <ul>
+              <li>Home Rental - February 15, 2025</li>
+              <li>Water Installment - February 20, 2025</li>
+              <li>Phone Bill - February 25, 2025</li>
+            </ul>
+          </div>
+          <div class="card recent-activities">
+            <h2><i class="fas fa-clock"></i> Recent Activities</h2>
+            <ul>
+              <li>Electric Bill - Success</li>
+              <li>Water Installment - Success</li>
+              <li>Phone Bill - Success</li>
+              <li>Internet Bill - Success</li>
+              <li>Home Rental - Pending</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
