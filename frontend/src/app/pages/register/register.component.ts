@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router'
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,12 +18,12 @@ export class RegisterComponent {
   registerForm: FormGroup;
   errorMessage: string = '';
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private router: Router) {
     this.registerForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
+      confirmPassword: ['', Validators.required],
     }, { validator: this.passwordMatchValidator });
   }
 
@@ -35,9 +36,23 @@ export class RegisterComponent {
 
   onRegister() {
     if (this.registerForm.invalid) {
-      this.errorMessage = "Please fill out all fields correctly.";
+      this.errorMessage = 'Please fill out all fields correctly.';
       return;
     }
-    console.log('User registered:', this.registerForm.value);
+
+    const { fullName, email, password, confirmPassword } = this.registerForm.value;
+
+    if (password !== confirmPassword) {
+      this.errorMessage = 'Passwords do not match.';
+      return;
+    }
+
+    // Store user data in local storage
+    let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    registeredUsers.push({ fullName, email, password });
+    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+
+    // Navigate to dashboard
+    this.router.navigate(['/dashboard']);
   }
 }

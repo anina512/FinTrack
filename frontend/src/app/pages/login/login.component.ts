@@ -27,6 +27,12 @@ export class LoginComponent {
   loginForm: FormGroup;
   errorMessage: string = '';
 
+  // Mock user data
+  private mockUsers = [
+    { email: 'test@example.com', password: 'password123' },
+    { email: 'user@example.com', password: '123456' }
+  ];
+
   constructor(private fb: FormBuilder, private router: Router) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -35,11 +41,17 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    if (this.loginForm.valid) {
-      console.log('Form Submitted', this.loginForm.value);
-      this.errorMessage = '';
+    const { email, password } = this.loginForm.value;
+
+    // Check if user exists in mock data or local storage
+    const userExists = this.mockUsers.find(user => user.email === email && user.password === password) ||
+                       JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+                        .find((user: any) => user.email === email && user.password === password);
+
+    if (userExists) {
+      this.router.navigate(['/dashboard']);
     } else {
-      this.errorMessage = 'Please fill in the form correctly';
+      this.errorMessage = 'Invalid email or password';
     }
   }
 
