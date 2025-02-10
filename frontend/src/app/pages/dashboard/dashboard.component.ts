@@ -2,12 +2,13 @@ import { Component, OnInit, AfterViewInit, ChangeDetectorRef, Inject, PLATFORM_I
 import { Chart, registerables } from 'chart.js';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ExpenseComponent } from '../expense/expense.component';
+import { SideNavComponent } from '../../shared/side-nav/side-nav.component';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [CommonModule, ExpenseComponent]
+  imports: [CommonModule, ExpenseComponent, SideNavComponent]
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   // Mock Data

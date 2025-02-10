@@ -43,3 +43,13 @@
     margin-top: 15px;
   }
   
+  .login-link {
+    color: blue;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  
+  .login-link:hover {
+    color: darkblue;
+  }
+  

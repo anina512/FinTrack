@@ -1,3 +1,7 @@
+.content {
+  margin-left: 5%;
+  padding: 20px;
+}
 .dashboard {
   font-family: 'Poppins', sans-serif;
   display: flex;

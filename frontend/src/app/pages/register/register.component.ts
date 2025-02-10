@@ -55,4 +55,7 @@ export class RegisterComponent {
     // Navigate to dashboard
     this.router.navigate(['/dashboard']);
   }
+  goToLogin() {
+    this.router.navigate(['/login']); 
+  }
 }

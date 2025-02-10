@@ -57,5 +57,8 @@ export class LoginComponent {
 
   goToRegister() {
     this.router.navigate(['/register']); // Navigate to the register page
-}
+  }
+  goToDashboard() {
+    this.router.navigate(['/dashboard']); // Navigate to the register page
+  }
 }
