@@ -32,7 +32,7 @@
                 <p>${{ expenses.toLocaleString() }}</p>
                 <small>-1.8% compared to last year</small>
               </div>
-              <div class="button-container">
+              <div class="button-container" (click)="openExpenseModal()">
                 <button class="btn add-expense">
                   <i class="fas fa-minus-circle"></i> Add Expense
                 </button>
@@ -47,7 +47,7 @@
               </div>
               <div class="card-footer">
                 <p>${{ savings.toLocaleString() }}</p>
-                <small>3.5% compared to last year</small>
+                <small>+3.5% compared to last year</small>
               </div>
               <div class="button-container">
                 <button class="btn add-budget">
@@ -89,6 +89,11 @@
             </ul>
           </div>
         </div>
+        <app-expense 
+          *ngIf="showExpenseModal"
+          (closeModal)="closeExpenseModal()"
+          (expenseSaved)="onExpenseSaved($event)">
+        </app-expense>
       </div>
     </div>
   </div>

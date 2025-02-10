@@ -1,11 +1,13 @@
 import { Component, OnInit, AfterViewInit, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
-import { isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ExpenseComponent } from '../expense/expense.component';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
+  imports: [CommonModule, ExpenseComponent]
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   // Mock Data
@@ -57,6 +59,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
     ],
   };
+  showExpenseModal: boolean = false;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -150,5 +153,19 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         }
       }, 100); // Slight delay to ensure elements are available
     }
+  }
+
+  openExpenseModal() {
+    this.showExpenseModal = true;
+  }
+  
+  closeExpenseModal() {
+    this.showExpenseModal = false;
+  }
+  
+  onExpenseSaved(expenseData: any) {
+    // Handle the saved expense data
+    console.log('New expense:', expenseData);
+    // Add your logic to update the dashboard here
   }
 }
