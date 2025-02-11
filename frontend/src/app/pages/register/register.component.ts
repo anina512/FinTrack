@@ -7,6 +7,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { User } from '../../models/user.model';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-register',
@@ -21,6 +23,7 @@ export class RegisterComponent {
   constructor(private fb: FormBuilder, private router: Router) {
     this.registerForm = this.fb.group({
       fullName: ['', Validators.required],
+      username: ['', [Validators.required, Validators.maxLength(10)] ],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
@@ -40,17 +43,23 @@ export class RegisterComponent {
       return;
     }
 
-    const { fullName, email, password, confirmPassword } = this.registerForm.value;
+    const { fullName, username, email, password, confirmPassword } = this.registerForm.value;
 
     if (password !== confirmPassword) {
       this.errorMessage = 'Passwords do not match.';
       return;
     }
 
-    // Store user data in local storage
-    let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    registeredUsers.push({ fullName, email, password });
-    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+     const newUser: User = {
+            id: uuidv4(),
+            fullName: fullName,
+            username: username,
+            email: email,
+            password: password,
+            date: Date.now().toString()
+          };
+          
+      console.log("CREATED NEW USER: \n" + JSON.stringify(newUser))
 
     // Navigate to dashboard
     this.router.navigate(['/dashboard']);

@@ -3,12 +3,14 @@ import { Chart, registerables } from 'chart.js';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ExpenseComponent } from '../expense/expense.component';
 import { SideNavComponent } from '../../shared/side-nav/side-nav.component';
+import { Expense } from '../../models/expense.model';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [CommonModule, ExpenseComponent, SideNavComponent]
+  imports: [CommonModule, ExpenseComponent, SideNavComponent],
+  providers: [ExpenseComponent]
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   // Mock Data
@@ -64,6 +66,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   constructor(
     private cdr: ChangeDetectorRef,
+    private expense: ExpenseComponent,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     Chart.register(...registerables);
@@ -166,6 +169,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   
   onExpenseSaved(expenseData: any) {
     // Handle the saved expense data
+    this.expense.saveExpense();
     console.log('New expense:', expenseData);
     // Add your logic to update the dashboard here
   }
