@@ -25,6 +25,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 })
 export class LoginComponent {
   loginForm: FormGroup;
+  hidePassword: Boolean = true;
   errorMessage: string = '';
 
   // Mock user data
