@@ -1,18 +1,20 @@
 import { Component, OnInit, AfterViewInit, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ExpenseComponent } from '../expense/expense.component';
+import { ExpenseComponent } from '../transactions/expense/expense.component';
 import { SideNavComponent } from '../../shared/side-nav/side-nav.component';
-import { Expense } from '../../models/expense.model';
+import { IncomeComponent } from '../transactions/income/income.component';
+import { BudgetComponent } from '../transactions/budget/budget.component';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [CommonModule, ExpenseComponent, SideNavComponent],
-  providers: [ExpenseComponent]
+  imports: [CommonModule, ExpenseComponent, IncomeComponent, SideNavComponent, BudgetComponent],
+  providers: [ExpenseComponent, IncomeComponent, BudgetComponent]
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
+
   // Mock Data
   savings = 89236;
   income = 27632;
@@ -63,10 +65,14 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ],
   };
   showExpenseModal: boolean = false;
+  showIncomeModal: boolean = false;
+  showBudgetModal: boolean = false;
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private expense: ExpenseComponent,
+    private expenseInstance: ExpenseComponent,
+    private incomeInstance: IncomeComponent,
+    private budgetInstance: BudgetComponent,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     Chart.register(...registerables);
@@ -169,8 +175,38 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   
   onExpenseSaved(expenseData: any) {
     // Handle the saved expense data
-    this.expense.saveExpense();
+    this.expenseInstance.saveExpense();
     console.log('New expense:', expenseData);
-    // Add your logic to update the dashboard here
+    // Add  logic to update the dashboard here
+  }
+
+  openIncomeModal() {
+    this.showIncomeModal = true;
+  }
+  
+  closeIncomeModal() {
+    this.showIncomeModal = false;
+  }
+  
+  onIncomeSaved(incomeData: any) {
+    // Handle the saved expense data
+    this.incomeInstance.saveIncome();
+    console.log('New income:', incomeData);
+    // Add  logic to update the dashboard here
+  }
+
+  openBudgetModal() {
+    this.showBudgetModal = true;
+  }
+  
+  closeBudgetModal() {
+    this.showBudgetModal = false;
+  }
+  
+  onBudgetSaved(budgetData: any) {
+    // Handle the saved expense data
+    this.budgetInstance.saveBudget();
+    console.log('New income:', budgetData);
+    // Add  logic to update the dashboard here
   }
 }

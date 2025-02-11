@@ -18,7 +18,7 @@
                 <small>+2.5% compared to last year</small>
               </div>
               <div class="button-container">
-                <button class="btn add-income">
+                <button class="btn add-income" (click)="openIncomeModal()">
                   <i class="fas fa-plus-circle"></i> Add Income
                 </button>
               </div>
@@ -52,7 +52,7 @@
                 <small>+3.5% compared to last year</small>
               </div>
               <div class="button-container">
-                <button class="btn add-budget">
+                <button class="btn add-budget" (click)="openBudgetModal()">
                   <i class="fas fa-chart-pie"></i> Add Budget
                 </button>
               </div>
@@ -96,6 +96,16 @@
           (closeModal)="closeExpenseModal()"
           (expenseSaved)="onExpenseSaved($event)">
         </app-expense>
+        <app-income 
+          *ngIf="showIncomeModal"
+          (closeModal)="closeIncomeModal()"
+          (incomeSaved)="onIncomeSaved($event)">
+        </app-income>
+        <app-budget 
+          *ngIf="showBudgetModal"
+          (closeModal)="closeBudgetModal()"
+          (budgetSaved)="onBudgetSaved($event)">
+        </app-budget>
       </div>
     </div>
   </div>

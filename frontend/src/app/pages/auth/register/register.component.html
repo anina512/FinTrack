@@ -1,0 +1,54 @@
+<div class="register-container">
+     <mat-card class="register-card">
+      <mat-card-title class="title">Register</mat-card-title>
+      <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+        
+        <mat-form-field class="full-width">
+          <mat-label>Full Name</mat-label>
+          <input matInput type="text" formControlName="fullName">
+        </mat-form-field>
+        <div *ngIf="registerForm.controls['fullName'].invalid && registerForm.controls['fullName'].touched" class="error">
+          Name is required.
+        </div>
+  
+        <mat-form-field class="full-width">
+          <mat-label>Username</mat-label>
+          <input matInput type="username" formControlName="username">
+        </mat-form-field>
+        <div *ngIf="registerForm.controls['username'].invalid && registerForm.controls['username'].touched" class="error">
+          Invalid username.
+        </div>
+
+        <mat-form-field class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email">
+        </mat-form-field>
+        <div *ngIf="registerForm.controls['email'].invalid && registerForm.controls['email'].touched" class="error">
+          Invalid email.
+        </div>
+    
+        <mat-form-field class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="password">
+        </mat-form-field>
+        <div *ngIf="registerForm.controls['password'].invalid && registerForm.controls['password'].touched" class="error">
+          Password must be at least 6 characters.
+        </div>
+  
+        <mat-form-field class="full-width">
+          <mat-label>Confirm Password</mat-label>
+          <input matInput type="password" formControlName="confirmPassword">
+        </mat-form-field>
+        <div *ngIf="registerForm.controls['confirmPassword'].invalid && registerForm.controls['confirmPassword'].touched" class="error">
+          Passwords must match.
+        </div>
+  
+        <button mat-raised-button color="primary" type="submit" class="submit-btn">Register</button>
+        
+        <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>   
+        <p>Already have an account? 
+          <a (click)="goToLogin()" class="login-link">Login here</a>
+        </p>
+      </form>
+    </mat-card>
+  </div> 

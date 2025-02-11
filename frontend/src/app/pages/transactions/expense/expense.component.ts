@@ -2,7 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Expense } from '../../models/expense.model';
+import { Expense } from '../../../models/transactions.model';
 import { v4 as uuidv4 } from 'uuid';
 
 

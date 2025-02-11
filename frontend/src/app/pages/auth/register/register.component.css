@@ -1,0 +1,55 @@
+/* Centering the register form */
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+  }
+  
+  /* Card styling */
+  .register-card {
+    width: 400px;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    background: white;
+  }
+  
+  /* Title Styling */
+  .title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+  
+  /* Input fields full width */
+  .full-width {
+    width: 100%;
+  }
+  
+  /* Error message styling */
+  .error {
+    color: red;
+    font-size: 0.85rem;
+    text-align: left;
+    margin: 5px 0 10px;
+  }
+  
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    margin-top: 15px;
+  }
+  
+  .login-link {
+    color: blue;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  
+  .login-link:hover {
+    color: darkblue;
+  }
+  
