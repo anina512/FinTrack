@@ -80,11 +80,13 @@ FinTrack is a personal finance application that helps users track their income, 
 
 
 ## Completed Issues
-
+- All the above mentioned user stories have been completed
 
 ---
 
 ## Incomplete Issues
+### Front_End
+ - Integrating Front-End with Back-End
 
 ### Back-End
 
