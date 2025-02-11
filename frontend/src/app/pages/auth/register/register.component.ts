@@ -7,8 +7,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { User } from '../../../models/user.model';
+
 import { v4 as uuidv4 } from 'uuid';
+import { User } from '../../../models/user.model';
 
 @Component({
   selector: 'app-register',
@@ -17,8 +18,19 @@ import { v4 as uuidv4 } from 'uuid';
   imports: [MatButtonModule, MatInputModule, MatFormFieldModule, CommonModule, MatFormField, MatCardModule, ReactiveFormsModule]
 })
 export class RegisterComponent {
+  hidePassword = true; // For password field visibility toggle
+  hideConfirmPassword = true; // For confirm password field visibility toggle
+
+  togglePasswordVisibility(): void {
+    this.hidePassword = !this.hidePassword; // Toggles password visibility
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.hideConfirmPassword = !this.hideConfirmPassword; // Toggles confirm password visibility
+  }
+  
   registerForm: FormGroup;
-  errorMessage: string = '';
+  errorMessage: string = '';  
 
   constructor(private fb: FormBuilder, private router: Router) {
     this.registerForm = this.fb.group({
