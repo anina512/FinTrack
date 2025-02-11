@@ -52,7 +52,32 @@ FinTrack is a personal finance application that helps users track their income, 
 - Implement UI for the **budget form**.
 - Implement models for storing the **budget data**.
 
----
+
+## Back-End
+
+### User Stories
+
+
+#### 1. User Authentication & Login
+**As a user, I want to store my data more privately and securly without any fear of data leaks.**
+
+- **Hash passwords**:
+  - Each password is encrypted into hash passwords, which will mask the real passwords and are then storesd ina private database.
+  - Each username will be unique so that there will no longer be any clashes for any users.
+
+
+#### 2. Storing user transactions
+**As a user, I want to safely store all of my transactions where I can retrive my data securely.**
+
+- Data is stored in the database by the usernameID, thus displaying the data only to the specific user.
+- All the tranwsactions can be viewed, edited and deleted only by the user and solely their own transactions.
+
+#### 3. Data Security and Encryption
+**As a user, I want to be assured all sorts of safety of my transactions and personal information.**
+
+- Since all the data is stored in a private database, there is no scope of any data leaks. Since there is an encryption of passwords, that is one of the stepping stones of data protection.
+
+
 
 ## Completed Issues
 
@@ -61,6 +86,9 @@ FinTrack is a personal finance application that helps users track their income, 
 
 ## Incomplete Issues
 
+### Back-End
 
+ - Database password will be protected by an authentication key in near future.
+ - More categorization of transactions category will be added.
 ---
 
