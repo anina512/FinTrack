@@ -1,0 +1,262 @@
+.content {
+  margin-left: 5%;
+  padding: 20px;
+}
+.dashboard {
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f8f9fa;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 20px 30px;
+}
+
+.main-section {
+  display: flex;
+  gap: 20px;
+  flex-grow: 1;
+  margin: 0 -10px;
+}
+
+/* Left Column Styles */
+.left-column {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin: 0 -10px;
+}
+
+/* Right Column Styles */
+.right-column {
+  flex: 1;
+  max-width: 300px;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Card Universal Styles */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  margin: 0 10px;
+  min-height: 360px;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card h2 i {
+  font-size: 18px;
+}
+
+.card-footer {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.card-footer p {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.card-footer small {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Chart Containers */
+.chart-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.doughnut-chart {
+  width: 80%;
+  margin: 10px auto 15px;
+  aspect-ratio: 1;
+}
+
+.bar-chart {
+  width: 90%;
+  height: 180px !important;
+  margin: 20px auto 10px;
+}
+
+/* Button Styles */
+.button-container {
+  margin-top: 15px;
+}
+
+.btn {
+  padding: 10px 20px;
+  font-size: 13px;
+  border-radius: 8px;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.add-income {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: white;
+}
+
+.add-expense {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+}
+
+.add-budget {
+  background: linear-gradient(135deg, #ffd700, #ffd700);
+  color: white;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* List Styles */
+.recent-activities ul,
+.upcoming-payments ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.recent-activities li,
+.upcoming-payments li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 13px;
+  list-style: none;
+}
+
+/* Accent Borders */
+.income-card { border-left: 4px solid #2ecc71; }
+.expenses-card { border-left: 4px solid #e74c3c; }
+.savings-card { border-left: 4px solid #ffd700; }
+.weekly-expenses-card { border-left: 4px solid #3498db; }
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .main-section {
+    flex-direction: column;
+  }
+  
+  .right-column {
+    max-width: 100%;
+    flex-direction: row;
+    margin-top: 20px;
+  }
+  
+  .right-column > .card {
+    flex: 1;
+    min-height: 300px;
+  }
+  
+  .stats-section {
+    margin: 0;
+  }
+  
+  .bar-chart {
+    width: 95%;
+    height: 160px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 20px;
+  }
+  
+  .stats-section {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .right-column {
+    flex-direction: column;
+  }
+  
+  .card {
+    min-height: 320px;
+    margin: 0;
+  }
+  
+  .doughnut-chart {
+    width: 70%;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 15px;
+  }
+  
+  .card h2 {
+    font-size: 15px;
+  }
+  
+  .btn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+  
+  .bar-chart {
+    height: 140px !important;
+  }
+}
