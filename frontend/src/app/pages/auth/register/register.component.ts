@@ -1,41 +1,41 @@
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router'
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { Router } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { v4 as uuidv4 } from 'uuid';
+import { AuthService } from '../../../services/auth.service';
 import { User } from '../../../models/user.model';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
-  imports: [MatButtonModule, MatInputModule, MatFormFieldModule, CommonModule, MatFormField, MatCardModule, ReactiveFormsModule]
+  imports: [
+      CommonModule,
+      MatCardModule,
+      MatInputModule,
+      MatFormFieldModule,
+      MatButtonModule,
+      ReactiveFormsModule,
+      HttpClientModule
+    ],
+    providers: [AuthService]
 })
 export class RegisterComponent {
-  hidePassword = true; // For password field visibility toggle
-  hideConfirmPassword = true; // For confirm password field visibility toggle
-
-  togglePasswordVisibility(): void {
-    this.hidePassword = !this.hidePassword; // Toggles password visibility
-  }
-
-  toggleConfirmPasswordVisibility(): void {
-    this.hideConfirmPassword = !this.hideConfirmPassword; // Toggles confirm password visibility
-  }
-  
+  hidePassword = true;
+  hideConfirmPassword = true;
   registerForm: FormGroup;
-  errorMessage: string = '';  
+  errorMessage: string = '';
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
     this.registerForm = this.fb.group({
       fullName: ['', Validators.required],
-      username: ['', [Validators.required, Validators.maxLength(10)] ],
+      username: ['', [Validators.required, Validators.maxLength(10)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
@@ -49,12 +49,19 @@ export class RegisterComponent {
       : { mismatch: true };
   }
 
+  togglePasswordVisibility(): void {
+    this.hidePassword = !this.hidePassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.hideConfirmPassword = !this.hideConfirmPassword;
+  }
+
   onRegister() {
     if (this.registerForm.invalid) {
       this.errorMessage = 'Please fill out all fields correctly.';
       return;
     }
-
     const { fullName, username, email, password, confirmPassword } = this.registerForm.value;
 
     if (password !== confirmPassword) {
@@ -62,21 +69,30 @@ export class RegisterComponent {
       return;
     }
 
-     const newUser: User = {
-            id: uuidv4(),
-            fullName: fullName,
-            username: username,
-            email: email,
-            password: password,
-            date: Date.now().toString()
-          };
-          
-      console.log("CREATED NEW USER: \n" + JSON.stringify(newUser))
+    const newUser: User = {
+      id: uuidv4(),
+      fullName: fullName,
+      username: username,
+      email: email,
+      password: password,
+      date: Date.now().toString()
+    };
 
-    // Navigate to dashboard
-    this.router.navigate(['/dashboard']);
+    this.authService.registerUser(username, password).subscribe({
+      next: (response) => {
+        console.log("User registered:", response);
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.error("Registration error:", err);
+        this.errorMessage = err.error.error || 'Registration failed';
+      }
+    });
+
+    // this.router.navigate(['/dashboard']);
   }
+
   goToLogin() {
-    this.router.navigate(['/login']); 
+    this.router.navigate(['/login']);
   }
 }

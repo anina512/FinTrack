@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-side-nav',
-  imports: [],
   templateUrl: './side-nav.component.html',
   styleUrl: './side-nav.component.css'
 })
