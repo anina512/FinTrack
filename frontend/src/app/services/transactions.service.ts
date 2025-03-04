@@ -12,10 +12,14 @@ export class TransactionsService {
 
   // Method to add income
   addIncome(income: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/incomes`, income);
+    return this.http.post(${this.baseUrl}/incomes, income);
   }
   // Method to add expense
   addExpense(expense: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/expenses`, expense);
+    return this.http.post(${this.baseUrl}/expenses, expense);
+  }
+  // Method to add budget
+  addBudget(budget: any): Observable<any> {
+    return this.http.post(${this.baseUrl}/budget, budget);
   }
 }
