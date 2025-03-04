@@ -1,27 +1,29 @@
 export interface Expense {
-    id: string;         
+    id?: string;
+    user_id: number;         
     amount: number;     
     category: string;   
     date: string;       
     description: string;
-    createdAt: Date;   
+    created_at: string;   
   }
 
 export interface Income {
-  id: string;         
+  id?: string;   
+  user_id: number;      
   amount: number;     
   category: string;   
   date: string;       
   description: string;
-  createdAt: Date;   
+  created_at: string;   
 }
 
 export interface Budget {
-  id: string;
+  id?: string;
   name: string;
   monthlyIncome: number;
   startDate: string;
   endDate: string;
   details: string;
-  createdAt: Date;
+  created_at: Date;
 }

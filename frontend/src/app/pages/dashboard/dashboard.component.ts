@@ -5,13 +5,15 @@ import { ExpenseComponent } from '../transactions/expense/expense.component';
 import { SideNavComponent } from '../../shared/side-nav/side-nav.component';
 import { IncomeComponent } from '../transactions/income/income.component';
 import { BudgetComponent } from '../transactions/budget/budget.component';
+import { TransactionsService } from '../../services/transactions.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [CommonModule, ExpenseComponent, IncomeComponent, SideNavComponent, BudgetComponent],
-  providers: [ExpenseComponent, IncomeComponent, BudgetComponent]
+  imports: [CommonModule, ExpenseComponent, IncomeComponent, SideNavComponent, BudgetComponent, HttpClientModule],
+  providers: [ExpenseComponent, IncomeComponent, BudgetComponent, TransactionsService]
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
 
@@ -73,6 +75,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     private expenseInstance: ExpenseComponent,
     private incomeInstance: IncomeComponent,
     private budgetInstance: BudgetComponent,
+    private transactionsService: TransactionsService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     Chart.register(...registerables);

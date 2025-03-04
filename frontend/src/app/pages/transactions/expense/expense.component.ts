@@ -4,6 +4,8 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Expense } from '../../../models/transactions.model';
 import { v4 as uuidv4 } from 'uuid';
+import { TransactionsService } from '../../../services/transactions.service';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @Component({
@@ -12,8 +14,10 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrls: ['./expense.component.css'],
   imports: [
     CommonModule,
-    FormsModule
-  ]
+    FormsModule,
+    HttpClientModule
+  ],
+  providers: [TransactionsService]
 })
 export class ExpenseComponent {
   @Output() closeModal = new EventEmitter<void>();
@@ -26,7 +30,9 @@ export class ExpenseComponent {
     description: ''
   };
 
-  categories = ['Food', 'Transport', 'Housing', 'Entertainment', 'Utilities'];
+  categories = ['bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others'];
+
+  constructor(private transactionsService: TransactionsService) {}
 
   close() {
     this.closeModal.emit();
@@ -35,16 +41,23 @@ export class ExpenseComponent {
   saveExpense() {
     if (this.expense.amount && this.expense.category && this.expense.date) {
       const newExpense: Expense = {
-        id: uuidv4(),
+        user_id: 1,
         amount: parseInt(this.expense.amount),
         category: this.expense.category,
-        date: this.expense.date,
+        date: new Date(this.expense.date).toISOString().split('T')[0],
         description: this.expense.description,
-        createdAt: new Date()
+        created_at: new Date().toISOString()
       };
       
-      this.expenseSaved.emit(newExpense);
-      this.close();
+      this.transactionsService.addExpense(newExpense).subscribe(
+        (response: any) => {
+          this.expenseSaved.emit(response); 
+          this.close();
+        },
+        (error) => {
+          console.error('Error saving expense:', error);
+        }
+      );
     }
 }
 }

@@ -20,6 +20,7 @@ import { IncomeComponent } from './pages/transactions/income/income.component';
 import { BudgetComponent } from './pages/transactions/budget/budget.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
+import { TransactionsService } from './services/transactions.service';
 
 @NgModule({
   declarations: [
@@ -47,7 +48,7 @@ import { AuthService } from './services/auth.service';
     RouterModule.forRoot([]),
     HttpClientModule
   ],
-  providers: [AuthService],
+  providers: [AuthService, TransactionsService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

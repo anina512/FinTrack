@@ -40,7 +40,7 @@ export class BudgetComponent {
         startDate: this.budget.startDate,
         endDate: this.budget.endDate,
         details: this.budget.details,
-        createdAt: new Date()
+        created_at: new Date()
       };
       
       this.budgetSaved.emit(newBudget);

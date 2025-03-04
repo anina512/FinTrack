@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080'; // Your Go backend URL
+  private apiUrl = 'http://localhost:8080'; 
 
   constructor(private http: HttpClient) {}
 

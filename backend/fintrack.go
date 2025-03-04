@@ -41,6 +41,16 @@ type Budget struct {
 	Details       string  `json:"details"`
 }
 
+type Income struct {
+	ID          uint    `json:"id" gorm:"primaryKey"`
+	UserID      uint    `json:"user_id"`
+	Amount      float64 `json:"amount"`
+	Category    string  `json:"category"`
+	Description string  `json:"description"`
+	Date        string  `json:"date"`
+	CreatedAt   string  `json:"created_at"`
+}
+
 func initDB() {
 	var err error
 	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
@@ -48,7 +58,7 @@ func initDB() {
 	if err != nil {
 		panic("Failed to connect to database")
 	}
-	db.AutoMigrate(&User{}, &Expense{}, &Budget{})
+	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{})
 }
 
 func main() {
@@ -71,7 +81,9 @@ func main() {
 	router.POST("/budget", SetBudget)
 	router.GET("/budget", GetBudgetDetails)
 	router.DELETE("/expenses/:id", DeleteExpense)
-
+	router.POST("/incomes", AddIncome)
+	router.GET("/incomes", GetIncomes)         
+	router.DELETE("/incomes/:id", DeleteIncome) 
 	router.Run(":8080")
 }
 
@@ -181,4 +193,43 @@ func GetBudgetDetails(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, budgets)
+}
+
+func AddIncome(c *gin.Context) {
+	var income Income
+	if err := c.ShouldBindJSON(&income); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+	income.CreatedAt = time.Now().Format("2006-01-02") // Set current date
+	if err := db.Create(&income).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save income"})
+		return
+	}
+	c.JSON(http.StatusOK, income)
+}
+
+func GetIncomes(c *gin.Context) {
+	var incomes []Income
+	result := db.Find(&incomes)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve incomes"})
+		return
+	}
+
+	if len(incomes) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No incomes found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, incomes)
+}
+
+func DeleteIncome(c *gin.Context) {
+	incomeID := c.Param("id")
+	if err := db.Delete(&Income{}, incomeID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete income"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Income deleted"})
 }
