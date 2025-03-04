@@ -13,7 +13,8 @@ import { HttpClientModule } from '@angular/common/http';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   imports: [CommonModule, ExpenseComponent, IncomeComponent, SideNavComponent, BudgetComponent, HttpClientModule],
-  providers: [ExpenseComponent, IncomeComponent, BudgetComponent, TransactionsService]
+  providers: [ExpenseComponent, IncomeComponent, BudgetComponent, TransactionsService],
+  standalone: true
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
 
