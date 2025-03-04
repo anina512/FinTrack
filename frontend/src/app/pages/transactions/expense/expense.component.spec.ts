@@ -1,98 +1,33 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
 import { ExpenseComponent } from './expense.component';
-import { TransactionsService } from '../../../services/transactions.service';
-import { of } from 'rxjs';
-import { FormsModule } from '@angular/forms';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { Expense } from '../../../models/transactions.model';
 
 describe('ExpenseComponent', () => {
   let component: ExpenseComponent;
-  let fixture: ComponentFixture<ExpenseComponent>;
-  let transactionsService: TransactionsService;
+  let mockTransactionsService: any;
+  let expenseSavedEmitSpy: jest.SpyInstance;
+  let closeModalEmitSpy: jest.SpyInstance;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [
-        FormsModule, 
-        HttpClientTestingModule, 
-        ExpenseComponent  // Adding ExpenseComponent here as it is standalone
-      ], 
-      providers: [TransactionsService],
-    }).compileComponents();
+  beforeEach(() => {
+    mockTransactionsService = {
+      addExpense: jest.fn()
+    };
 
-    fixture = TestBed.createComponent(ExpenseComponent);
-    component = fixture.componentInstance;
-    transactionsService = TestBed.inject(TransactionsService);
+    component = new ExpenseComponent(mockTransactionsService);
 
-    fixture.detectChanges();
+    expenseSavedEmitSpy = jest.spyOn(component.expenseSaved, 'emit');
+    closeModalEmitSpy = jest.spyOn(component.closeModal, 'emit');
   });
 
-  it('should create the component', () => {
-    expect(component).toBeTruthy();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should emit closeModal event when close() is called', () => {
-    const closeModalEmit = jest.fn();
-    component.closeModal.emit = closeModalEmit;  // Overriding the emit method with a Jest mock function
-    
+  it('should emit closeModal when close() is called', () => {
     component.close();
-    
-    expect(closeModalEmit).toHaveBeenCalled();
+    expect(closeModalEmitSpy).toHaveBeenCalledTimes(1);
   });
 
-//   it('should call saveExpense and emit expenseSaved event on successful save', () => {
-//     const mockExpense: Expense = {
-//       user_id: 1,
-//       amount: 100,
-//       category: 'food',
-//       date: '2025-03-01',
-//       description: 'Test expense',
-//       created_at: new Date().toISOString(),
-//     };
-
-//     // Mock the addExpense method to return a mocked expense
-//     const addExpenseMock = jest.fn().mockReturnValue(of(mockExpense));
-//     transactionsService.addExpense = addExpenseMock;
-
-//     const expenseSavedEmit = jest.fn();
-//     component.expenseSaved.emit = expenseSavedEmit;  // Overriding the emit method with a Jest mock function
-
-//     const closeMock = jest.fn();
-//     component.close = closeMock;  // Overriding the close method with a Jest mock function
-
-//     // Set valid expense values
-//     component.expense = {
-//       amount: '100',
-//       category: 'food',
-//       date: '2025-03-01',
-//       description: 'Test expense'
-//     };
-
-//     // Call the saveExpense method
-//     component.saveExpense();
-
-//     // Ensure addExpense was called with correct parameters
-//     expect(addExpenseMock).toHaveBeenCalledWith({
-//       user_id: 1,
-//       amount: 100,
-//       category: 'food',
-//       date: '2025-03-01',
-//       description: 'Test expense',
-//       created_at: expect.any(String),
-//     });
-
-//     // Ensure the expenseSaved and close methods were called
-//     expect(expenseSavedEmit).toHaveBeenCalledWith(mockExpense);
-//     expect(closeMock).toHaveBeenCalled();
-//   });
-
-  it('should not call saveExpense if required fields are missing', () => {
-    // Mock addExpense
-    const addExpenseMock = jest.fn();
-    transactionsService.addExpense = addExpenseMock;
-
-    // Set invalid expense values
+  it('should not call addExpense if required expense fields are missing', () => {
     component.expense = {
       amount: '',
       category: '',
@@ -100,10 +35,61 @@ describe('ExpenseComponent', () => {
       description: ''
     };
 
-    // Call the saveExpense method
+    component.saveExpense();
+    expect(mockTransactionsService.addExpense).not.toHaveBeenCalled();
+  });
+
+  it('should call addExpense and emit expenseSaved then close when saving valid expense', () => {
+    const testDate = '2023-01-01';
+    const testDescription = 'Test expense description';
+    component.expense = {
+      amount: '300',
+      category: 'food',
+      date: testDate,
+      description: testDescription
+    };
+
+    const expectedFormattedDate = new Date(testDate).toISOString().split('T')[0];
+
+    const mockResponse = { id: 456, ...component.expense };
+    mockTransactionsService.addExpense.mockReturnValue(of(mockResponse));
+
     component.saveExpense();
 
-    // Ensure addExpense was not called
-    expect(addExpenseMock).not.toHaveBeenCalled();
+    expect(mockTransactionsService.addExpense).toHaveBeenCalledTimes(1);
+
+    const newExpenseArg = mockTransactionsService.addExpense.mock.calls[0][0];
+
+    expect(newExpenseArg.user_id).toBe(1);
+    expect(newExpenseArg.amount).toBe(300);
+    expect(newExpenseArg.category).toBe('food');
+    expect(newExpenseArg.date).toBe(expectedFormattedDate);
+    expect(newExpenseArg.description).toBe(testDescription);
+    expect(newExpenseArg.created_at).toBeDefined();
+
+    expect(expenseSavedEmitSpy).toHaveBeenCalledWith(mockResponse);
+    expect(closeModalEmitSpy).toHaveBeenCalled();
+  });
+
+  it('should log an error and not emit events when addExpense fails', () => {
+    component.expense = {
+      amount: '200',
+      category: 'trip',
+      date: '2023-02-01',
+      description: 'Error scenario'
+    };
+
+    const errorResponse = new Error('API failure');
+    mockTransactionsService.addExpense.mockReturnValue(throwError(() => errorResponse));
+
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    component.saveExpense();
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error saving expense:', errorResponse);
+    expect(expenseSavedEmitSpy).not.toHaveBeenCalled();
+    expect(closeModalEmitSpy).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
   });
 });
