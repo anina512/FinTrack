@@ -8,6 +8,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../../../services/auth.service';
+import { HttpClientModule } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-login',
@@ -20,21 +23,17 @@ import { ReactiveFormsModule } from '@angular/forms';
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
-    ReactiveFormsModule
-  ]
+    ReactiveFormsModule,
+    HttpClientModule
+  ],
+  providers: [AuthService]
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  hidePassword: Boolean = true;
+  hidePassword: boolean = true;
   errorMessage: string = '';
 
-  // Mock user data
-  private mockUsers = [
-    { email: 'test@example.com', password: 'password123' },
-    { email: 'user@example.com', password: '123456' }
-  ];
-
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
@@ -42,22 +41,29 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    const { email, password } = this.loginForm.value;
-
-    // Check if user exists in mock data or local storage
-    const userExists = this.mockUsers.find(user => user.email === email && user.password === password) ||
-                       JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-                        .find((user: any) => user.email === email && user.password === password);
-
-    if (userExists) {
-      this.router.navigate(['/dashboard']);
-    } else {
-      this.errorMessage = 'Invalid email or password';
+    if (this.loginForm.invalid) {
+      console.log('Form is invalid:', this.loginForm.errors);  // Log errors
+      this.errorMessage = 'Please enter a valid email and password.';
+      return;
     }
+  
+    const { email, password } = this.loginForm.value;
+  
+    // Send credentials to backend for authentication
+    this.authService.login(email, password).subscribe({
+      next: (response) => {
+        console.log("Login successful:", response);
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        console.error("Login error:", err);
+        this.errorMessage = err.error.error || 'Invalid email or password.';
+      }
+    });
   }
 
   goToRegister() {
-    this.router.navigate(['/register']); 
+    this.router.navigate(['/register']);
   }
   goToDashboard() {
     this.router.navigate(['/dashboard']); 
