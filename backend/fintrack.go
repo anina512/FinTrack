@@ -28,7 +28,11 @@ type Expense struct {
 	UserID   uint    `json:"user_id"`
 	Amount   float64 `json:"amount"`
 	Category string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
+<<<<<<< HEAD
 	Description     string  `json:"description"`
+=======
+	Note     string  `json:"note"`
+>>>>>>> e2ad538 (final commit sprint2)
 	Date     string  `json:"date"` // Keep it as string for JSON serialization
 }
 
@@ -55,12 +59,20 @@ type Income struct {
 
 func initDB() {
 	var err error
+<<<<<<< HEAD
 	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
+=======
+	dsn := "host=localhost user=postgres password=Pavan@257 dbname=fintrack port=5432 sslmode=disable"
+>>>>>>> e2ad538 (final commit sprint2)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database")
 	}
+<<<<<<< HEAD
 	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{})
+=======
+	db.AutoMigrate(&User{}, &Expense{}, &Budget{})
+>>>>>>> e2ad538 (final commit sprint2)
 }
 
 func main() {
@@ -82,11 +94,15 @@ func main() {
 	router.GET("/expenses", GetExpenses)
 	router.POST("/budget", SetBudget)
 	router.GET("/budget", GetBudgetDetails)
+<<<<<<< HEAD
 	router.DELETE("/budget/:id", DeleteBudget)
 	router.DELETE("/expenses/:id", DeleteExpense)
 	router.POST("/incomes", AddIncome)
 	router.GET("/incomes", GetIncomes)         
 	router.DELETE("/incomes/:id", DeleteIncome) 
+=======
+	router.DELETE("/expenses/:id", DeleteExpense)
+>>>>>>> e2ad538 (final commit sprint2)
 
 	router.Run(":8080")
 }
