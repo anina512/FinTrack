@@ -16,13 +16,9 @@ var db *gorm.DB
 // User struct
 type User struct {
 	ID       uint   `json:"id" gorm:"primaryKey"`
-<<<<<<< HEAD
-	Username string `json:"username" gorm:"unique;not null"`
-=======
 	FullName string `json:"fullName" gorm:"not null"`
 	Username string `json:"username" gorm:"unique;not null"`
 	Email    string `json:"email" gorm:"unique;not null"`
->>>>>>> e2ad538 (final commit sprint2)
 	Password string `json:"password" gorm:"not null"`
 }
 
@@ -32,15 +28,7 @@ type Expense struct {
 	UserID   uint    `json:"user_id"`
 	Amount   float64 `json:"amount"`
 	Category string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
-<<<<<<< HEAD
-<<<<<<< HEAD
 	Description     string  `json:"description"`
-=======
-	Note     string  `json:"note"`
->>>>>>> e2ad538 (final commit sprint2)
-=======
-	Description     string  `json:"description"`
->>>>>>> 1e5345d (Unit test and code fixes)
 	Date     string  `json:"date"` // Keep it as string for JSON serialization
 }
 
@@ -67,24 +55,12 @@ type Income struct {
 
 func initDB() {
 	var err error
-<<<<<<< HEAD
-<<<<<<< HEAD
 	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
-=======
-	dsn := "host=localhost user=postgres password=Pavan@257 dbname=fintrack port=5432 sslmode=disable"
->>>>>>> e2ad538 (final commit sprint2)
-=======
-	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
->>>>>>> 1e5345d (Unit test and code fixes)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database")
 	}
-<<<<<<< HEAD
 	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{})
-=======
-	db.AutoMigrate(&User{}, &Expense{}, &Budget{})
->>>>>>> e2ad538 (final commit sprint2)
 }
 
 func main() {
@@ -106,23 +82,12 @@ func main() {
 	router.GET("/expenses", GetExpenses)
 	router.POST("/budget", SetBudget)
 	router.GET("/budget", GetBudgetDetails)
-<<<<<<< HEAD
-<<<<<<< HEAD
 	router.DELETE("/budget/:id", DeleteBudget)
-	router.DELETE("/expenses/:id", DeleteExpense)
-	router.POST("/incomes", AddIncome)
-	router.GET("/incomes", GetIncomes)         
-	router.DELETE("/incomes/:id", DeleteIncome) 
-=======
-=======
-	router.DELETE("/budget/:id", DeleteBudget)
->>>>>>> 1e5345d (Unit test and code fixes)
 	router.DELETE("/expenses/:id", DeleteExpense)
 	router.POST("/incomes", AddIncome)
 	router.GET("/incomes", GetIncomes)         
 	router.DELETE("/incomes/:id", DeleteIncome) 
 
->>>>>>> e2ad538 (final commit sprint2)
 	router.Run(":8080")
 }
 
@@ -140,15 +105,12 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-<<<<<<< HEAD
-=======
 	// Check if email already exists
 	if err := db.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
 		return
 	}
 
->>>>>>> e2ad538 (final commit sprint2)
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -170,36 +132,20 @@ func LoginUser(c *gin.Context) {
 	var input User
 	var user User
 
-<<<<<<< HEAD
-=======
 	// Parse request body
->>>>>>> e2ad538 (final commit sprint2)
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-<<<<<<< HEAD
-	// Check if user exists
-	if err := db.Where("username = ?", input.Username).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
-=======
 	// Find user by email
 	if err := db.Where("email = ?", input.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
->>>>>>> e2ad538 (final commit sprint2)
 		return
 	}
 
 	// Compare hashed password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
-<<<<<<< HEAD
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
-=======
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
@@ -209,7 +155,6 @@ func LoginUser(c *gin.Context) {
 		"message": "Login successful",
 		"userId":  user.ID, // Assuming `user.ID` is the user ID from the database
 	})
->>>>>>> e2ad538 (final commit sprint2)
 }
 
 func AddExpense(c *gin.Context) {

@@ -63,20 +63,14 @@ export class RegisterComponent {
       return;
     }
     const { fullName, username, email, password, confirmPassword } = this.registerForm.value;
-<<<<<<< HEAD
 
-=======
   
->>>>>>> e2ad538 (final commit sprint2)
     if (password !== confirmPassword) {
       this.errorMessage = 'Passwords do not match.';
       return;
     }
-<<<<<<< HEAD
 
-=======
   
->>>>>>> e2ad538 (final commit sprint2)
     const newUser: User = {
       id: uuidv4(),
       fullName: fullName,
@@ -85,13 +79,8 @@ export class RegisterComponent {
       password: password,
       date: Date.now().toString()
     };
-<<<<<<< HEAD
-
-    this.authService.registerUser(username, password).subscribe({
-=======
   
     this.authService.registerUser(fullName, username, email, password).subscribe({
->>>>>>> e2ad538 (final commit sprint2)
       next: (response) => {
         console.log("User registered:", response);
         this.router.navigate(['/login']);
@@ -101,14 +90,8 @@ export class RegisterComponent {
         this.errorMessage = err.error.error || 'Registration failed';
       }
     });
-<<<<<<< HEAD
-
-    // this.router.navigate(['/dashboard']);
-  }
-=======
   }
   
->>>>>>> e2ad538 (final commit sprint2)
 
   goToLogin() {
     this.router.navigate(['/login']);
