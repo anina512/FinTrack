@@ -27,9 +27,9 @@ describe('AuthService', () => {
 
   describe('registerUser', () => {
     it('should send a POST request to register a user', () => {
-      const mockUser = { username: 'testuser', password: 'testpass' };
+      const mockUser = { fullName: 'user', email: 'user@gmail.com', username: 'testuser', password: 'testpass' };
 
-      service.registerUser(mockUser.username, mockUser.password).subscribe(response => {
+      service.registerUser(mockUser.fullName, mockUser.username, mockUser.email, mockUser.password, ).subscribe(response => {
         expect(response).toEqual(mockUser);
       });
 
@@ -43,10 +43,10 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('should send a POST request to login a user', () => {
-      const mockCredentials = { username: 'testuser', password: 'testpass' };
+      const mockCredentials = { email: 'testuser', password: 'testpass' };
       const mockResponse = { token: 'fake-jwt-token' };
 
-      service.login(mockCredentials.username, mockCredentials.password).subscribe(response => {
+      service.login(mockCredentials.email, mockCredentials.password).subscribe(response => {
         expect(response).toEqual(mockResponse);
       });
 
