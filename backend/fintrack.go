@@ -16,7 +16,9 @@ var db *gorm.DB
 // User struct
 type User struct {
 	ID       uint   `json:"id" gorm:"primaryKey"`
+	FullName string `json:"fullName" gorm:"not null"`
 	Username string `json:"username" gorm:"unique;not null"`
+	Email    string `json:"email" gorm:"unique;not null"`
 	Password string `json:"password" gorm:"not null"`
 }
 
@@ -85,6 +87,7 @@ func main() {
 	router.POST("/incomes", AddIncome)
 	router.GET("/incomes", GetIncomes)         
 	router.DELETE("/incomes/:id", DeleteIncome) 
+
 	router.Run(":8080")
 }
 
@@ -99,6 +102,12 @@ func RegisterUser(c *gin.Context) {
 	var existingUser User
 	if err := db.Where("username = ?", user.Username).First(&existingUser).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
+		return
+	}
+
+	// Check if email already exists
+	if err := db.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
 		return
 	}
 
@@ -123,24 +132,29 @@ func LoginUser(c *gin.Context) {
 	var input User
 	var user User
 
+	// Parse request body
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	// Check if user exists
-	if err := db.Where("username = ?", input.Username).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+	// Find user by email
+	if err := db.Where("email = ?", input.Email).First(&user).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
 	// Compare hashed password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+	// Login successful, return user ID along with success message
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Login successful",
+		"userId":  user.ID, // Assuming `user.ID` is the user ID from the database
+	})
 }
 
 func AddExpense(c *gin.Context) {

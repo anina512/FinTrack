@@ -64,11 +64,13 @@ export class RegisterComponent {
     }
     const { fullName, username, email, password, confirmPassword } = this.registerForm.value;
 
+  
     if (password !== confirmPassword) {
       this.errorMessage = 'Passwords do not match.';
       return;
     }
 
+  
     const newUser: User = {
       id: uuidv4(),
       fullName: fullName,
@@ -77,8 +79,8 @@ export class RegisterComponent {
       password: password,
       date: Date.now().toString()
     };
-
-    this.authService.registerUser(username, password).subscribe({
+  
+    this.authService.registerUser(fullName, username, email, password).subscribe({
       next: (response) => {
         console.log("User registered:", response);
         this.router.navigate(['/login']);
@@ -88,9 +90,8 @@ export class RegisterComponent {
         this.errorMessage = err.error.error || 'Registration failed';
       }
     });
-
-    // this.router.navigate(['/dashboard']);
   }
+  
 
   goToLogin() {
     this.router.navigate(['/login']);
