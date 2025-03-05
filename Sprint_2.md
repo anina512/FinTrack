@@ -141,14 +141,20 @@ All the data is given in a JSON format and the example is shown below.
 &nbsp;   "password" : "enter a secure password"
 
 }
+2.	LOGIN USER
+After the user is registered successfully, user can login with their email and password. Now, we will use the GET request for the login details, here is the JSON format on how to get the login details.
 
-**Output for each testcase:**
-Fig C: Login user failed Fig D: Login Successful
+**JSON Format:** {
+  &nbsp;   		"email" : "usertest@gmail.com",
+  &nbsp;   		"password" : "securepassword"
 
-1. EXPENSES (ADD, GET AND DELETE)
+}
+
+
+3. EXPENSES (ADD, GET AND DELETE)
 
 For adding expenses, when there is a new data added from the frontend, then the newly added data will be stored in the database, which is uniquely stored according to the user who implemented the data. Same goes for viewing and deleting the expenses, which are assigned to the users who created the data. This ensures privacy for each user as their expenses cannot be viewed by anyone.
 
-1. BUDGET (ADD AND SET)
+4. BUDGET (ADD AND SET)
 
 Users can add, edit their budgets in the website itself, which is stored in the database under budget table, which also can solely be edited by the user who designed it. Adding this feature will help the user track if they are well spending under their budget or over-spending their budget.
