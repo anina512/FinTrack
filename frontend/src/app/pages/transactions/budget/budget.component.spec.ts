@@ -1,15 +1,32 @@
 import { of, throwError } from 'rxjs';
 import { BudgetComponent } from './budget.component';
+import { Budget } from '../../../models/transactions.model';
 
 describe('BudgetComponent', () => {
   let component: BudgetComponent;
   let mockTransactionsService: any;
   let budgetSavedEmitSpy: jest.SpyInstance;
   let closeModalEmitSpy: jest.SpyInstance;
+  let mockBudgetData: Budget[];
 
   beforeEach(() => {
+    mockBudgetData = [
+      {
+        id: '1',
+        user_id: 1,
+        budget_name: 'Test Budget',
+        monthly_income: 5000,
+        start_date: '2023-01-01',
+        end_date: '2023-12-31',
+        details: 'Test details',
+        created_at: new Date().toISOString()
+      }
+    ];
+
     mockTransactionsService = {
-      addBudget: jest.fn()
+      addBudget: jest.fn(),
+      getBudget: jest.fn().mockReturnValue(of(mockBudgetData)),
+      deleteBudget: jest.fn().mockReturnValue(of({}))
     };
 
     component = new BudgetComponent(mockTransactionsService);
@@ -25,6 +42,51 @@ describe('BudgetComponent', () => {
   it('should emit closeModal when close() is called', () => {
     component.close();
     expect(closeModalEmitSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call loadBudget on initialization', () => {
+    const loadBudgetSpy = jest.spyOn(component, 'loadBudget');
+    component.ngOnInit();
+    expect(loadBudgetSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should load budget data successfully', () => {
+    component.loadBudget();
+    expect(mockTransactionsService.getBudget).toHaveBeenCalledWith(1);
+    expect(component.budgetList).toEqual(mockBudgetData);
+  });
+
+  it('should handle error when loading budget fails', () => {
+    const errorResponse = new Error('Loading failed');
+    mockTransactionsService.getBudget.mockReturnValue(throwError(() => errorResponse));
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    
+    component.loadBudget();
+    
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching expenses:', errorResponse);
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should delete budget successfully', () => {
+    component.budgetList = mockBudgetData;
+    const initialLength = component.budgetList.length;
+    
+    component.deleteExpense('1');
+    
+    expect(mockTransactionsService.deleteBudget).toHaveBeenCalledWith('1');
+    expect(component.budgetList.length).toBe(initialLength - 1);
+    expect(component.budgetList.some(b => b.id === '1')).toBe(false);
+  });
+
+  it('should handle error when deleting budget fails', () => {
+    const errorResponse = new Error('Deletion failed');
+    mockTransactionsService.deleteBudget.mockReturnValue(throwError(() => errorResponse));
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    
+    component.deleteExpense('1');
+    
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error deleting expense:', errorResponse);
+    consoleErrorSpy.mockRestore();
   });
 
   it('should not call addBudget if required budget fields are missing', () => {
