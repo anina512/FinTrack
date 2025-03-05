@@ -1,9 +1,8 @@
 // expense.component.ts
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Expense } from '../../../models/transactions.model';
-import { v4 as uuidv4 } from 'uuid';
 import { TransactionsService } from '../../../services/transactions.service';
 import { HttpClientModule } from '@angular/common/http';
 
@@ -23,6 +22,9 @@ export class ExpenseComponent {
   @Output() closeModal = new EventEmitter<void>();
   @Output() expenseSaved = new EventEmitter<any>();
 
+  @Input() mode: 'add' | 'view' = 'add'; // Mode to toggle between Add and View
+  expensesList: Expense[] = []; 
+
   expense = {
     amount: '',
     category: '',
@@ -34,8 +36,23 @@ export class ExpenseComponent {
 
   constructor(private transactionsService: TransactionsService) {}
 
+  ngOnInit() {
+    this.loadExpenses();
+  }
+
   close() {
     this.closeModal.emit();
+  }
+
+  loadExpenses() {
+    this.transactionsService.getExpenses(1).subscribe(
+      (response: Expense[]) => {
+        this.expensesList = response; 
+      },
+      (error) => {
+        console.error('Error fetching expenses:', error);
+      }
+    );
   }
 
   saveExpense() {
@@ -59,5 +76,17 @@ export class ExpenseComponent {
         }
       );
     }
-}
+  }
+
+  deleteExpense(expenseId: string) {
+    this.transactionsService.deleteExpense(expenseId).subscribe(
+      () => {
+        this.expensesList = this.expensesList.filter(expense => expense.id !== expenseId);
+
+      },
+      (error) => {
+        console.error('Error deleting expense:', error);
+      }
+    );
+  }
 }

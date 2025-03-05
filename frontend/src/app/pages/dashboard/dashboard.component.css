@@ -138,19 +138,30 @@
   font-weight: 500;
 }
 
-.add-income {
+.add-income, .view-income {
   background: linear-gradient(135deg, #2ecc71, #27ae60);
   color: white;
 }
 
-.add-expense {
+.add-expense, .view-expense {
   background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: white;
 }
 
-.add-budget {
+.add-budget, .view-budget {
   background: linear-gradient(135deg, #ffd700, #ffd700);
   color: white;
+}
+
+.row-buttons {
+  display: flex;
+  justify-content: start; /* Align to the left */
+  gap: 10px; /* Space between buttons */
+}
+
+.row-buttons .btn {
+  width: auto; /* Ensure buttons don't stretch */
+  padding: 8px 12px; /* Reduce padding for a compact look */
 }
 
 .btn:hover {

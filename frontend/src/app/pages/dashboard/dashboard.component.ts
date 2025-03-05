@@ -18,6 +18,12 @@ import { HttpClientModule } from '@angular/common/http';
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
 
+  showExpenseModal = false;
+  expenseMode: 'add' | 'view' = 'add'; 
+  showIncomeModal = false;
+  incomeMode: 'add' | 'view' = 'add'; 
+  showBudgetModal = false;
+  budgetMode: 'add' | 'view' = 'add'; 
   // Mock Data
   savings = 89236;
   income = 27632;
@@ -67,9 +73,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
     ],
   };
-  showExpenseModal: boolean = false;
-  showIncomeModal: boolean = false;
-  showBudgetModal: boolean = false;
+ 
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -170,22 +174,41 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   openExpenseModal() {
+    this.expenseMode = 'add';
     this.showExpenseModal = true;
   }
   
+  viewExpenseDetails() {
+    this.expenseMode = 'view';
+    this.showExpenseModal = true;
+  }
+
   closeExpenseModal() {
     this.showExpenseModal = false;
   }
-  
   onExpenseSaved(expenseData: any) {
-    // Handle the saved expense data
     this.expenseInstance.saveExpense();
     console.log('New expense:', expenseData);
-    // Add  logic to update the dashboard here
   }
 
   openIncomeModal() {
+    this.incomeMode = 'add';
     this.showIncomeModal = true;
+  }
+  
+  viewIncomeDetails() {
+    this.incomeMode = 'view';
+    this.showIncomeModal = true;
+  }
+
+  openBudgetModal() {
+    this.budgetMode = 'add';
+    this.showBudgetModal = true;
+  }
+  
+  viewBudgetDetails() {
+    this.budgetMode = 'view';
+    this.showBudgetModal = true;
   }
   
   closeIncomeModal() {
@@ -193,24 +216,17 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
   
   onIncomeSaved(incomeData: any) {
-    // Handle the saved expense data
     this.incomeInstance.saveIncome();
     console.log('New income:', incomeData);
-    // Add  logic to update the dashboard here
   }
 
-  openBudgetModal() {
-    this.showBudgetModal = true;
-  }
-  
   closeBudgetModal() {
     this.showBudgetModal = false;
   }
   
   onBudgetSaved(budgetData: any) {
-    // Handle the saved expense data
     this.budgetInstance.saveBudget();
-    console.log('New income:', budgetData);
-    // Add  logic to update the dashboard here
+    console.log('New budget:', budgetData);
   }
+
 }
