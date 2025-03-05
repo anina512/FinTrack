@@ -77,9 +77,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private expenseInstance: ExpenseComponent,
-    private incomeInstance: IncomeComponent,
-    private budgetInstance: BudgetComponent,
+    public expenseInstance: ExpenseComponent,
+    public incomeInstance: IncomeComponent,
+    public budgetInstance: BudgetComponent,
     private transactionsService: TransactionsService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
