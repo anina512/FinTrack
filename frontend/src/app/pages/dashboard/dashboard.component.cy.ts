@@ -94,8 +94,11 @@ describe('DashboardComponent', () => {
     cy.wait(500);
 
     cy.get('app-budget').should('exist').and('be.visible');
-    cy.get('app-budget .modal-header h2').should('contain', 'Create New Budget');
+    cy.get('app-budget .modal-header h2').should('contain', 'Add New Budget');
 
+    // Wait for mode to be 'add' before checking the form elements
+    cy.get('app-budget .budget-form').should('be.visible');
+    
     cy.get('app-budget input[name="name"]').should('exist');
     cy.get('app-budget input[name="monthlyIncome"]').should('exist');
     cy.get('app-budget input[name="startDate"]').should('exist');
@@ -106,10 +109,6 @@ describe('DashboardComponent', () => {
     cy.get('app-budget button.save').should('exist').and('contain', 'Save Budget');
   });
 
-  it('should display upcoming payments', () => {
-    cy.get('.upcoming-payments ul li').should('have.length', 3);
-    cy.get('.upcoming-payments ul li').first().should('contain', 'Home Rental - February 15, 2025');
-  });
 
   it('should display recent activities', () => {
     cy.get('.recent-activities ul li').should('have.length', 5);

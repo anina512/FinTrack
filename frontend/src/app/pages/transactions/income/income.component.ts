@@ -1,6 +1,6 @@
 // income.component.ts
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Income } from '../../../models/transactions.model';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,6 +23,9 @@ export class IncomeComponent {
   @Output() closeModal = new EventEmitter<void>();
   @Output() incomeSaved = new EventEmitter<any>();
 
+   @Input() mode: 'add' | 'view' = 'add'; // Mode to toggle between Add and View
+    incomeList: Income[] = []; 
+
   income = {
     amount: '',
     category: '',
@@ -34,9 +37,36 @@ export class IncomeComponent {
 
   constructor(private transactionsService: TransactionsService) {}
 
+  ngOnInit() {
+    this.loadIncomes();
+  }
+
   close() {
     this.closeModal.emit();
   }
+
+   loadIncomes() {
+      this.transactionsService.getIncomes(1).subscribe(
+        (response: Income[]) => {
+          this.incomeList = response; 
+        },
+        (error) => {
+          console.error('Error fetching incomes:', error);
+        }
+      );
+    }
+
+    deleteIncome(incomeId: string) {
+      this.transactionsService.deleteIncome(incomeId).subscribe(
+        () => {
+          this.incomeList = this.incomeList.filter(income => income.id !== incomeId);
+  
+        },
+        (error) => {
+          console.error('Error deleting income:', error);
+        }
+      );
+    }
 
   saveIncome() {
     if (this.income.amount && this.income.category && this.income.date) {

@@ -17,9 +17,12 @@
                 <p>${{ income.toLocaleString() }}</p>
                 <small>+2.5% compared to last year</small>
               </div>
-              <div class="button-container">
+              <div class="button-container row-buttons">
                 <button class="btn add-income" (click)="openIncomeModal()">
-                  <i class="fas fa-plus-circle"></i> Add Income
+                  <i class="fas fa-plus-circle"></i>
+                </button>
+                <button class="btn view-income" (click)="viewIncomeDetails()">
+                  <i class="fas fa-eye"></i>
                 </button>
               </div>
             </div>
@@ -34,9 +37,12 @@
                 <p>${{ expenses.toLocaleString() }}</p>
                 <small>-1.8% compared to last year</small>
               </div>
-              <div class="button-container" (click)="openExpenseModal()">
-                <button class="btn add-expense">
-                  <i class="fas fa-minus-circle"></i> Add Expense
+              <div class="button-container row-buttons">
+                <button class="btn add-expense" (click)="openExpenseModal()">
+                  <i class="fas  fa-plus-circle"></i>
+                </button>
+                <button class="btn view-expense" (click)="viewExpenseDetails()">
+                  <i class="fas fa-eye"></i>
                 </button>
               </div>
             </div>
@@ -51,9 +57,12 @@
                 <p>${{ savings.toLocaleString() }}</p>
                 <small>+3.5% compared to last year</small>
               </div>
-              <div class="button-container">
+              <div class="button-container row-buttons">
                 <button class="btn add-budget" (click)="openBudgetModal()">
-                  <i class="fas fa-chart-pie"></i> Add Budget
+                  <i class="fas  fa-plus-circle"></i>
+                </button>
+                <button class="btn view-budget" (click)="viewBudgetDetails()">
+                  <i class="fas fa-eye"></i>
                 </button>
               </div>
             </div>
@@ -92,17 +101,20 @@
           </div>
         </div>
         <app-expense 
-          *ngIf="showExpenseModal"
-          (closeModal)="closeExpenseModal()"
-          (expenseSaved)="onExpenseSaved($event)">
-        </app-expense>
+        *ngIf="showExpenseModal"
+        [mode]="expenseMode"
+        (closeModal)="closeExpenseModal()"
+        (expenseSaved)="onExpenseSaved($event)">
+      </app-expense>
         <app-income 
           *ngIf="showIncomeModal"
+          [mode]="incomeMode"
           (closeModal)="closeIncomeModal()"
           (incomeSaved)="onIncomeSaved($event)">
         </app-income>
         <app-budget 
           *ngIf="showBudgetModal"
+          [mode]="budgetMode"
           (closeModal)="closeBudgetModal()"
           (budgetSaved)="onBudgetSaved($event)">
         </app-budget>

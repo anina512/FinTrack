@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Budget } from '../../../models/transactions.model';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,6 +21,9 @@ export class BudgetComponent {
   @Output() closeModal = new EventEmitter<void>();
   @Output() budgetSaved = new EventEmitter<Budget>();
 
+  @Input() mode: 'add' | 'view' = 'add'; // Mode to toggle between Add and View
+  budgetList: Budget[] = []; 
+
   budget = {
     name: '',
     monthlyIncome: '',
@@ -30,6 +33,33 @@ export class BudgetComponent {
   };
 
   constructor(private transactionsService: TransactionsService) {}
+
+  ngOnInit() {
+    this.loadBudget();
+  }
+
+  loadBudget() {
+      this.transactionsService.getBudget(1).subscribe(
+        (response: Budget[]) => {
+          this.budgetList = response; 
+        },
+        (error) => {
+          console.error('Error fetching expenses:', error);
+        }
+      );
+    }
+
+    deleteExpense(budgetId: string) {
+      this.transactionsService.deleteBudget(budgetId).subscribe(
+        () => {
+          this.budgetList = this.budgetList.filter(budget => budget.id !== budgetId);
+  
+        },
+        (error) => {
+          console.error('Error deleting expense:', error);
+        }
+      );
+    }
 
   close() {
     this.closeModal.emit();

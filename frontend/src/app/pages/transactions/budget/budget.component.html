@@ -2,11 +2,12 @@
 <div class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Create New Budget</h2>
+      <h2 *ngIf="mode === 'add'">Add New Budget</h2>
+      <h2 *ngIf="mode === 'view'">View Budget</h2>
         <button class="close-btn" (click)="close()">&times;</button>
       </div>
   
-      <form class="expense-form" (ngSubmit)="saveBudget()">
+      <form class="budget-form" (ngSubmit)="saveBudget()"  *ngIf="mode === 'add'">
         <div class="form-group">
           <label>Budget Name</label>
           <input type="text" 
@@ -53,5 +54,35 @@
           <button type="submit" class="btn save">Save Budget</button>
         </div>
       </form>
+      <div class="budget-table-wrapper" *ngIf="mode === 'view' ">
+        <div class="table-container">
+          <table class="budget-table">
+            <thead>
+              <tr>
+                <th>Budget Name</th>
+                <th>Monthly Income</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Details</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let bud of budgetList">
+                <td>{{ bud.budget_name  }}</td>
+                <td>{{ bud.monthly_income | currency }}</td>
+                <td>{{ bud.start_date | date:'MMM d, yyyy' }}</td>
+                <td>{{ bud.end_date | date:'MMM d, yyyy' }}</td>
+                <td>{{ bud.details}}</td>
+                <td>
+                  <button class="delete-btn" (click)="deleteExpense(bud.id ? bud.id : '')">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>

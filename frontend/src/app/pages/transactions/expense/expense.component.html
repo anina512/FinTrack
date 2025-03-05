@@ -1,48 +1,70 @@
-<!-- expense.component.html -->
 <div class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Add New Expense</h2>
-        <button class="close-btn" (click)="close()">&times;</button>
-      </div>
-  
-      <form class="expense-form" (ngSubmit)="saveExpense()">
-        <div class="form-group">
-          <label>Amount</label>
-          <input type="number" 
-                 [(ngModel)]="expense.amount" 
-                 name="amount" 
-                 placeholder="Enter amount"
-                 required>
-        </div>
-  
-        <div class="form-group">
-          <label>Category</label>
-          <select [(ngModel)]="expense.category" name="category" required>
-            <option value="">Select Category</option>
-            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-          </select>
-        </div>
-  
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" 
-                 [(ngModel)]="expense.date" 
-                 name="date"
-                 required>
-        </div>
-  
-        <div class="form-group">
-          <label>Description</label>
-          <textarea [(ngModel)]="expense.description" 
-                    name="description" 
-                    placeholder="Add note..."></textarea>
-        </div>
-  
-        <div class="button-group">
-          <button type="button" class="btn cancel" (click)="close()">Cancel</button>
-          <button type="submit" class="btn save">Save Expense</button>
-        </div>
-      </form>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 *ngIf="mode === 'add'">Add New Expense</h2>
+      <h2 *ngIf="mode === 'view'">View Expenses</h2>
+      <button class="close-btn" (click)="close()">&times;</button>
     </div>
+
+    <!-- ADD EXPENSE FORM -->
+    <form class="expense-form" (ngSubmit)="saveExpense()" *ngIf="mode === 'add'">
+      <div class="form-group">
+        <label>Amount</label>
+        <input type="number" [(ngModel)]="expense.amount" name="amount" placeholder="Enter amount" required>
+      </div>
+
+      <div class="form-group">
+        <label>Category</label>
+        <select [(ngModel)]="expense.category" name="category" required>
+          <option value="">Select Category</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="expense.date" name="date" required>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="expense.description" name="description" placeholder="Add note..."></textarea>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn cancel" (click)="close()">Cancel</button>
+        <button type="submit" class="btn save">Save Expense</button>
+      </div>
+    </form>
+
+    <!-- VIEW EXPENSES LIST -->
+<div class="expenses-table-wrapper" *ngIf="mode === 'view' ">
+  <div class="table-container">
+    <table class="expense-table">
+      <thead>
+        <tr>
+          <th>Amount</th>
+          <th>Category</th>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let exp of expensesList">
+          <td>{{ exp.amount | currency }}</td>
+          <td>{{ exp.category }}</td>
+          <td>{{ exp.date | date:'MMM d, yyyy' }}</td>
+          <td>{{ exp.description}}</td>
+          <td>
+            <button class="delete-btn" (click)="deleteExpense(exp.id ? exp.id : '')">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+</div>
+  </div>
+</div>

@@ -26,7 +26,7 @@ type Expense struct {
 	UserID   uint    `json:"user_id"`
 	Amount   float64 `json:"amount"`
 	Category string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
-	Note     string  `json:"note"`
+	Description     string  `json:"description"`
 	Date     string  `json:"date"` // Keep it as string for JSON serialization
 }
 
@@ -80,6 +80,7 @@ func main() {
 	router.GET("/expenses", GetExpenses)
 	router.POST("/budget", SetBudget)
 	router.GET("/budget", GetBudgetDetails)
+	router.DELETE("/budget/:id", DeleteBudget)
 	router.DELETE("/expenses/:id", DeleteExpense)
 	router.POST("/incomes", AddIncome)
 	router.GET("/incomes", GetIncomes)         
@@ -232,4 +233,13 @@ func DeleteIncome(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Income deleted"})
+}
+
+func DeleteBudget(c *gin.Context) {
+	budgetID := c.Param("id")
+	if err := db.Delete(&Budget{}, budgetID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete budget"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Budget deleted"})
 }
