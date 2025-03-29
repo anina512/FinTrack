@@ -24,12 +24,12 @@ type User struct {
 
 // Expense struct
 type Expense struct {
-	ID       uint    `json:"id" gorm:"primaryKey"`
-	UserID   uint    `json:"user_id"`
-	Amount   float64 `json:"amount"`
-	Category string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
-	Note     string  `json:"note"`
-	Date     string  `json:"date"` // Keep it as string for JSON serialization
+	ID          uint    `json:"id" gorm:"primaryKey"`
+	UserID      uint    `json:"user_id"`
+	Amount      float64 `json:"amount"`
+	Category    string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
+	Description string  `json:"description"`
+	Date        string  `json:"date"` // Keep it as string for JSON serialization
 }
 
 // Budget struct
@@ -60,7 +60,7 @@ func initDB() {
 	if err != nil {
 		panic("Failed to connect to database")
 	}
-	db.AutoMigrate(&User{}, &Expense{}, &Budget{})
+	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{})
 }
 
 func main() {
@@ -82,7 +82,11 @@ func main() {
 	router.GET("/expenses", GetExpenses)
 	router.POST("/budget", SetBudget)
 	router.GET("/budget", GetBudgetDetails)
+	router.DELETE("/budget/:id", DeleteBudget)
 	router.DELETE("/expenses/:id", DeleteExpense)
+	router.POST("/incomes", AddIncome)
+	router.GET("/incomes", GetIncomes)
+	router.DELETE("/incomes/:id", DeleteIncome)
 
 	router.Run(":8080")
 }
