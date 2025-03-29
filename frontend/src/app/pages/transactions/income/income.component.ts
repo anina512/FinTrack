@@ -6,6 +6,7 @@ import { Income } from '../../../models/transactions.model';
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionsService } from '../../../services/transactions.service';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../../../services/auth.service';
 
 
 @Component({
@@ -17,7 +18,7 @@ import { HttpClientModule } from '@angular/common/http';
     FormsModule,
     HttpClientModule
   ],
-  providers: [TransactionsService]
+  providers: [TransactionsService, AuthService]
 })
 export class IncomeComponent {
   @Output() closeModal = new EventEmitter<void>();
@@ -35,9 +36,15 @@ export class IncomeComponent {
 
   categories = ['Food', 'Transport', 'Housing', 'Entertainment', 'Utilities'];
 
-  constructor(private transactionsService: TransactionsService) {}
+  loggedInUserId: number | null = null;
+
+  constructor(
+    private transactionsService: TransactionsService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit() {
+    this.loggedInUserId = this.authService.getUserId();
     this.loadIncomes();
   }
 
@@ -46,7 +53,7 @@ export class IncomeComponent {
   }
 
    loadIncomes() {
-      this.transactionsService.getIncomes(1).subscribe(
+      this.transactionsService.getIncomes(this.loggedInUserId).subscribe(
         (response: Income[]) => {
           this.incomeList = response; 
         },
@@ -71,7 +78,7 @@ export class IncomeComponent {
   saveIncome() {
     if (this.income.amount && this.income.category && this.income.date) {
       const newIncome: Income = {
-        user_id: 1,
+        user_id: this.loggedInUserId,
         amount: parseInt(this.income.amount),
         category: this.income.category,
         date: new Date(this.income.date).toISOString().split('T')[0],

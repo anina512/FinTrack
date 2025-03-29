@@ -7,13 +7,14 @@ import { IncomeComponent } from '../transactions/income/income.component';
 import { BudgetComponent } from '../transactions/budget/budget.component';
 import { TransactionsService } from '../../services/transactions.service';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   imports: [CommonModule, ExpenseComponent, IncomeComponent, SideNavComponent, BudgetComponent, HttpClientModule],
-  providers: [ExpenseComponent, IncomeComponent, BudgetComponent, TransactionsService],
+  providers: [ExpenseComponent, IncomeComponent, BudgetComponent, TransactionsService, AuthService],
   standalone: true
 })
 export class DashboardComponent implements OnInit, AfterViewInit {

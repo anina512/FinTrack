@@ -42,14 +42,12 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.loginForm.invalid) {
-      console.log('Form is invalid:', this.loginForm.errors);  // Log errors
       this.errorMessage = 'Please enter a valid email and password.';
       return;
     }
   
     const { email, password } = this.loginForm.value;
   
-    // Send credentials to backend for authentication
     this.authService.login(email, password).subscribe({
       next: (response) => {
         console.log("Login successful:", response);
@@ -61,11 +59,10 @@ export class LoginComponent {
       }
     });
   }
+  
 
   goToRegister() {
     this.router.navigate(['/register']);
   }
-  // goToDashboard() {
-  //   this.router.navigate(['/dashboard']); 
-  // }
+ 
 }

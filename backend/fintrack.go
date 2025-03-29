@@ -69,10 +69,14 @@ type Income struct {
 func initDB() {
 	var err error
 <<<<<<< HEAD
+<<<<<<< HEAD
 	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
 =======
 	dsn := "host=localhost user=postgres password=Pavan@257 dbname=fintrack port=5432 sslmode=disable"
 >>>>>>> e2ad538 (final commit sprint2)
+=======
+	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
+>>>>>>> c7da743 (Saved current logged in user session and made all API calls user-specific)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database")
@@ -215,8 +219,25 @@ func DeleteExpense(c *gin.Context) {
 }
 
 func GetExpenses(c *gin.Context) {
+	userID := c.Query("user_id") 
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+		return
+	}
+
 	var expenses []Expense
-	db.Find(&expenses)
+	result := db.Where("user_id = ?", userID).Find(&expenses)
+
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve expenses"})
+		return
+	}
+
+	if len(expenses) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No expenses found"})
+		return
+	}
+
 	c.JSON(http.StatusOK, expenses)
 }
 
@@ -231,8 +252,14 @@ func SetBudget(c *gin.Context) {
 }
 
 func GetBudgetDetails(c *gin.Context) {
+	userID := c.Query("user_id") 
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+		return
+	}
+
 	var budgets []Budget
-	result := db.Find(&budgets) // Instead of LIMIT 1, fetch all
+	result := db.Where("user_id = ?", userID).Find(&budgets)
 
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve budgets"})
@@ -262,8 +289,15 @@ func AddIncome(c *gin.Context) {
 }
 
 func GetIncomes(c *gin.Context) {
+	userID := c.Query("user_id") 
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+		return
+	}
+
 	var incomes []Income
-	result := db.Find(&incomes)
+	result := db.Where("user_id = ?", userID).Find(&incomes)
+
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve incomes"})
 		return
