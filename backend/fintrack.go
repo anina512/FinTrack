@@ -24,6 +24,7 @@ type User struct {
 
 // Expense struct
 type Expense struct {
+<<<<<<< HEAD
 	ID       uint    `json:"id" gorm:"primaryKey"`
 	UserID   uint    `json:"user_id"`
 	Amount   float64 `json:"amount"`
@@ -34,6 +35,14 @@ type Expense struct {
 	Note     string  `json:"note"`
 >>>>>>> e2ad538 (final commit sprint2)
 	Date     string  `json:"date"` // Keep it as string for JSON serialization
+=======
+	ID          uint    `json:"id" gorm:"primaryKey"`
+	UserID      uint    `json:"user_id"`
+	Amount      float64 `json:"amount"`
+	Category    string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
+	Description string  `json:"description"`
+	Date        string  `json:"date"` // Keep it as string for JSON serialization
+>>>>>>> a3287af (Initial commit for sprint3draft)
 }
 
 // Budget struct
@@ -69,10 +78,14 @@ func initDB() {
 		panic("Failed to connect to database")
 	}
 <<<<<<< HEAD
+<<<<<<< HEAD
 	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{})
 =======
 	db.AutoMigrate(&User{}, &Expense{}, &Budget{})
 >>>>>>> e2ad538 (final commit sprint2)
+=======
+	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{})
+>>>>>>> a3287af (Initial commit for sprint3draft)
 }
 
 func main() {
@@ -95,6 +108,7 @@ func main() {
 	router.POST("/budget", SetBudget)
 	router.GET("/budget", GetBudgetDetails)
 <<<<<<< HEAD
+<<<<<<< HEAD
 	router.DELETE("/budget/:id", DeleteBudget)
 	router.DELETE("/expenses/:id", DeleteExpense)
 	router.POST("/incomes", AddIncome)
@@ -103,6 +117,13 @@ func main() {
 =======
 	router.DELETE("/expenses/:id", DeleteExpense)
 >>>>>>> e2ad538 (final commit sprint2)
+=======
+	router.DELETE("/budget/:id", DeleteBudget)
+	router.DELETE("/expenses/:id", DeleteExpense)
+	router.POST("/incomes", AddIncome)
+	router.GET("/incomes", GetIncomes)
+	router.DELETE("/incomes/:id", DeleteIncome)
+>>>>>>> a3287af (Initial commit for sprint3draft)
 
 	router.Run(":8080")
 }
