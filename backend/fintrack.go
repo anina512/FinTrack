@@ -24,25 +24,12 @@ type User struct {
 
 // Expense struct
 type Expense struct {
-<<<<<<< HEAD
-	ID       uint    `json:"id" gorm:"primaryKey"`
-	UserID   uint    `json:"user_id"`
-	Amount   float64 `json:"amount"`
-	Category string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
-<<<<<<< HEAD
-	Description     string  `json:"description"`
-=======
-	Note     string  `json:"note"`
->>>>>>> e2ad538 (final commit sprint2)
-	Date     string  `json:"date"` // Keep it as string for JSON serialization
-=======
 	ID          uint    `json:"id" gorm:"primaryKey"`
 	UserID      uint    `json:"user_id"`
 	Amount      float64 `json:"amount"`
 	Category    string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
 	Description string  `json:"description"`
 	Date        string  `json:"date"` // Keep it as string for JSON serialization
->>>>>>> a3287af (Initial commit for sprint3draft)
 }
 
 // Budget struct
@@ -66,30 +53,15 @@ type Income struct {
 	CreatedAt   string  `json:"created_at"`
 }
 
+
 func initDB() {
 	var err error
-<<<<<<< HEAD
-<<<<<<< HEAD
 	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
-=======
-	dsn := "host=localhost user=postgres password=Pavan@257 dbname=fintrack port=5432 sslmode=disable"
->>>>>>> e2ad538 (final commit sprint2)
-=======
-	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
->>>>>>> c7da743 (Saved current logged in user session and made all API calls user-specific)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database")
 	}
-<<<<<<< HEAD
-<<<<<<< HEAD
 	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{})
-=======
-	db.AutoMigrate(&User{}, &Expense{}, &Budget{})
->>>>>>> e2ad538 (final commit sprint2)
-=======
-	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{})
->>>>>>> a3287af (Initial commit for sprint3draft)
 }
 
 func main() {
@@ -111,23 +83,11 @@ func main() {
 	router.GET("/expenses", GetExpenses)
 	router.POST("/budget", SetBudget)
 	router.GET("/budget", GetBudgetDetails)
-<<<<<<< HEAD
-<<<<<<< HEAD
-	router.DELETE("/budget/:id", DeleteBudget)
-	router.DELETE("/expenses/:id", DeleteExpense)
-	router.POST("/incomes", AddIncome)
-	router.GET("/incomes", GetIncomes)         
-	router.DELETE("/incomes/:id", DeleteIncome) 
-=======
-	router.DELETE("/expenses/:id", DeleteExpense)
->>>>>>> e2ad538 (final commit sprint2)
-=======
 	router.DELETE("/budget/:id", DeleteBudget)
 	router.DELETE("/expenses/:id", DeleteExpense)
 	router.POST("/incomes", AddIncome)
 	router.GET("/incomes", GetIncomes)
 	router.DELETE("/incomes/:id", DeleteIncome)
->>>>>>> a3287af (Initial commit for sprint3draft)
 
 	router.Run(":8080")
 }
@@ -194,7 +154,7 @@ func LoginUser(c *gin.Context) {
 	// Login successful, return user ID along with success message
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Login successful",
-		"userId":  user.ID, // Assuming `user.ID` is the user ID from the database
+		"userId":  user.ID, // Assuming user.ID is the user ID from the database
 	})
 }
 
@@ -219,7 +179,7 @@ func DeleteExpense(c *gin.Context) {
 }
 
 func GetExpenses(c *gin.Context) {
-	userID := c.Query("user_id") 
+	userID := c.Query("user_id") // Get user ID from query parameter
 	if userID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
 		return
@@ -252,7 +212,7 @@ func SetBudget(c *gin.Context) {
 }
 
 func GetBudgetDetails(c *gin.Context) {
-	userID := c.Query("user_id") 
+	userID := c.Query("user_id") // Get user ID from query parameter
 	if userID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
 		return
@@ -289,7 +249,7 @@ func AddIncome(c *gin.Context) {
 }
 
 func GetIncomes(c *gin.Context) {
-	userID := c.Query("user_id") 
+	userID := c.Query("user_id") // Get user ID from query parameter
 	if userID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
 		return

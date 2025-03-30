@@ -63,19 +63,11 @@ export class RegisterComponent {
       return;
     }
     const { fullName, username, email, password, confirmPassword } = this.registerForm.value;
-<<<<<<< HEAD
-
-=======
->>>>>>> e2ad538 (final commit sprint2)
   
     if (password !== confirmPassword) {
       this.errorMessage = 'Passwords do not match.';
       return;
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> e2ad538 (final commit sprint2)
   
     const newUser: User = {
       id: uuidv4(),
