@@ -5,6 +5,7 @@ import { Budget } from '../../../models/transactions.model';
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionsService } from '../../../services/transactions.service';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-budget',
@@ -15,7 +16,7 @@ import { HttpClientModule } from '@angular/common/http';
     FormsModule,
     HttpClientModule
   ],
-  providers: [TransactionsService]
+  providers: [TransactionsService, AuthService]
 })
 export class BudgetComponent {
   @Output() closeModal = new EventEmitter<void>();
@@ -32,14 +33,17 @@ export class BudgetComponent {
     details: ''
   };
 
-  constructor(private transactionsService: TransactionsService) {}
+  loggedInUserId: number | null = null;
+
+  constructor(private transactionsService: TransactionsService, private authService: AuthService) {}
 
   ngOnInit() {
+    this.loggedInUserId = this.authService.getUserId();
     this.loadBudget();
   }
 
   loadBudget() {
-      this.transactionsService.getBudget(1).subscribe(
+      this.transactionsService.getBudget(this.loggedInUserId).subscribe(
         (response: Budget[]) => {
           this.budgetList = response; 
         },
@@ -68,7 +72,7 @@ export class BudgetComponent {
   saveBudget() {
     if (this.budget.name && this.budget.monthlyIncome && this.budget.startDate && this.budget.endDate) {
       const newBudget: Budget = {
-        user_id: 1,
+        user_id: this.loggedInUserId,
         budget_name: this.budget.name,
         monthly_income: parseFloat(this.budget.monthlyIncome),
         start_date:  new Date(this.budget.startDate).toISOString().split('T')[0],

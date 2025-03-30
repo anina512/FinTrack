@@ -1,6 +1,6 @@
 export interface Expense {
   id?: string;
-  user_id: number;         
+  user_id: number | null;         
   amount: number;     
   category: string;   
   date: string;       
@@ -10,7 +10,7 @@ export interface Expense {
 
 export interface Income {
 id?: string;   
-user_id: number;      
+user_id: number | null;      
 amount: number;     
 category: string;   
 date: string;       
@@ -20,7 +20,7 @@ created_at: string;
 
 export interface Budget {
 id?: string;
-user_id: number;
+user_id: number | null;
 budget_name: string;
 monthly_income: number;
 start_date: string;

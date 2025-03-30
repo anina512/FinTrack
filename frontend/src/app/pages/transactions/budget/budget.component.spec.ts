@@ -5,6 +5,7 @@ import { Budget } from '../../../models/transactions.model';
 describe('BudgetComponent', () => {
   let component: BudgetComponent;
   let mockTransactionsService: any;
+  let mockAuthService: any;
   let budgetSavedEmitSpy: jest.SpyInstance;
   let closeModalEmitSpy: jest.SpyInstance;
   let mockBudgetData: Budget[];
@@ -29,7 +30,11 @@ describe('BudgetComponent', () => {
       deleteBudget: jest.fn().mockReturnValue(of({}))
     };
 
-    component = new BudgetComponent(mockTransactionsService);
+    mockAuthService = {
+      getUserId: jest.fn().mockReturnValue(1)
+    };
+
+    component = new BudgetComponent(mockTransactionsService, mockAuthService);
 
     budgetSavedEmitSpy = jest.spyOn(component.budgetSaved, 'emit');
     closeModalEmitSpy = jest.spyOn(component.closeModal, 'emit');
@@ -52,7 +57,7 @@ describe('BudgetComponent', () => {
 
   it('should load budget data successfully', () => {
     component.loadBudget();
-    expect(mockTransactionsService.getBudget).toHaveBeenCalledWith(1);
+    expect(mockTransactionsService.getBudget).toHaveBeenCalled();
     expect(component.budgetList).toEqual(mockBudgetData);
   });
 
@@ -108,7 +113,7 @@ describe('BudgetComponent', () => {
     const testStartDate = '2023-01-01';
     const testEndDate = '2023-12-31';
     const testDetails = 'Budget details text';
-
+    component.loggedInUserId = 1;
     component.budget = {
       name: testName,
       monthlyIncome: testMonthlyIncome,

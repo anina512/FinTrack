@@ -24,12 +24,12 @@ type User struct {
 
 // Expense struct
 type Expense struct {
-	ID       uint    `json:"id" gorm:"primaryKey"`
-	UserID   uint    `json:"user_id"`
-	Amount   float64 `json:"amount"`
-	Category string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
-	Description     string  `json:"description"`
-	Date     string  `json:"date"` // Keep it as string for JSON serialization
+	ID          uint    `json:"id" gorm:"primaryKey"`
+	UserID      uint    `json:"user_id"`
+	Amount      float64 `json:"amount"`
+	Category    string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
+	Description string  `json:"description"`
+	Date        string  `json:"date"` // Keep it as string for JSON serialization
 }
 
 // Budget struct
@@ -52,6 +52,7 @@ type Income struct {
 	Date        string  `json:"date"`
 	CreatedAt   string  `json:"created_at"`
 }
+
 
 func initDB() {
 	var err error
@@ -85,8 +86,8 @@ func main() {
 	router.DELETE("/budget/:id", DeleteBudget)
 	router.DELETE("/expenses/:id", DeleteExpense)
 	router.POST("/incomes", AddIncome)
-	router.GET("/incomes", GetIncomes)         
-	router.DELETE("/incomes/:id", DeleteIncome) 
+	router.GET("/incomes", GetIncomes)
+	router.DELETE("/incomes/:id", DeleteIncome)
 
 	router.Run(":8080")
 }
@@ -153,7 +154,7 @@ func LoginUser(c *gin.Context) {
 	// Login successful, return user ID along with success message
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Login successful",
-		"userId":  user.ID, // Assuming `user.ID` is the user ID from the database
+		"userId":  user.ID, // Assuming user.ID is the user ID from the database
 	})
 }
 
@@ -178,8 +179,25 @@ func DeleteExpense(c *gin.Context) {
 }
 
 func GetExpenses(c *gin.Context) {
+	userID := c.Query("user_id") // Get user ID from query parameter
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+		return
+	}
+
 	var expenses []Expense
-	db.Find(&expenses)
+	result := db.Where("user_id = ?", userID).Find(&expenses)
+
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve expenses"})
+		return
+	}
+
+	if len(expenses) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No expenses found"})
+		return
+	}
+
 	c.JSON(http.StatusOK, expenses)
 }
 
@@ -194,8 +212,14 @@ func SetBudget(c *gin.Context) {
 }
 
 func GetBudgetDetails(c *gin.Context) {
+	userID := c.Query("user_id") // Get user ID from query parameter
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+		return
+	}
+
 	var budgets []Budget
-	result := db.Find(&budgets) // Instead of LIMIT 1, fetch all
+	result := db.Where("user_id = ?", userID).Find(&budgets)
 
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve budgets"})
@@ -225,8 +249,15 @@ func AddIncome(c *gin.Context) {
 }
 
 func GetIncomes(c *gin.Context) {
+	userID := c.Query("user_id") // Get user ID from query parameter
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+		return
+	}
+
 	var incomes []Income
-	result := db.Find(&incomes)
+	result := db.Where("user_id = ?", userID).Find(&incomes)
+
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve incomes"})
 		return

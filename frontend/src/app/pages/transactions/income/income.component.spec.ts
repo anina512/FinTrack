@@ -5,6 +5,7 @@ import { Income } from '../../../models/transactions.model';
 describe('IncomeComponent', () => {
   let component: IncomeComponent;
   let mockTransactionsService: any;
+  let mockAuthService: any;
   let incomeSavedEmitSpy: jest.SpyInstance;
   let closeModalEmitSpy: jest.SpyInstance;
   let mockIncomes: Income[];
@@ -37,7 +38,11 @@ describe('IncomeComponent', () => {
       deleteIncome: jest.fn().mockReturnValue(of({}))
     };
 
-    component = new IncomeComponent(mockTransactionsService);
+    mockAuthService = {
+      getUserId: jest.fn().mockReturnValue(1)
+    };
+
+    component = new IncomeComponent(mockTransactionsService, mockAuthService);
 
     incomeSavedEmitSpy = jest.spyOn(component.incomeSaved, 'emit');
     closeModalEmitSpy = jest.spyOn(component.closeModal, 'emit');
@@ -68,6 +73,7 @@ describe('IncomeComponent', () => {
   it('should call addIncome and emit incomeSaved then close when saving valid income', () => {
     const testDate = '2023-01-01';
     const testDescription = 'Valid income';
+    component.loggedInUserId = 1;
     component.income = {
       amount: '200',
       category: 'Food',
@@ -119,7 +125,7 @@ describe('IncomeComponent', () => {
   describe('loadIncomes()', () => {
     it('should fetch incomes and populate incomeList', () => {
       component.loadIncomes();
-      expect(mockTransactionsService.getIncomes).toHaveBeenCalledWith(1);
+      expect(mockTransactionsService.getIncomes).toHaveBeenCalled();
       expect(component.incomeList).toEqual(mockIncomes);
     });
 

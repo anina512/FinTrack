@@ -58,7 +58,11 @@ describe('RegisterComponent', () => {
   });
 
   it('should navigate to login page when clicking login link', () => {
+<<<<<<< HEAD
     cy.get('@component').then((wrapper: any) => {
+=======
+    cy.get('@component').then((wrapper) => {
+>>>>>>> e2ad538 (final commit sprint2)
       const component = wrapper.component as RegisterComponent;
       cy.spy(component['router'], 'navigate').as('routerSpy');
     });
@@ -69,7 +73,11 @@ describe('RegisterComponent', () => {
   it('should attempt registration with valid inputs', () => {
     cy.intercept('POST', '**/register', { statusCode: 200, body: { message: 'Registration successful' } }).as('registerRequest');
 
+<<<<<<< HEAD
     cy.get('@component').then((wrapper: any) => {
+=======
+    cy.get('@component').then((wrapper) => {
+>>>>>>> e2ad538 (final commit sprint2)
       const component = wrapper.component as RegisterComponent;
       cy.spy(component['router'], 'navigate').as('routerSpy');
     });
@@ -82,9 +90,13 @@ describe('RegisterComponent', () => {
     cy.get('button[type="submit"]').click();
 
     cy.wait('@registerRequest').its('request.body').should('deep.equal', {
+<<<<<<< HEAD
       fullName: 'Test User',
       username: 'testuser',
       email: 'test@example.com',
+=======
+      username: 'testuser',
+>>>>>>> e2ad538 (final commit sprint2)
       password: 'password123'
     });
 

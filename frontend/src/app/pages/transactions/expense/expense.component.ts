@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Expense } from '../../../models/transactions.model';
 import { TransactionsService } from '../../../services/transactions.service';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../../../services/auth.service';
 
 
 @Component({
@@ -16,7 +17,7 @@ import { HttpClientModule } from '@angular/common/http';
     FormsModule,
     HttpClientModule
   ],
-  providers: [TransactionsService]
+  providers: [TransactionsService, AuthService]
 })
 export class ExpenseComponent {
   @Output() closeModal = new EventEmitter<void>();
@@ -34,9 +35,15 @@ export class ExpenseComponent {
 
   categories = ['bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others'];
 
-  constructor(private transactionsService: TransactionsService) {}
+  loggedInUserId: number | null = null;
+
+  constructor(
+    private transactionsService: TransactionsService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit() {
+    this.loggedInUserId = this.authService.getUserId();
     this.loadExpenses();
   }
 
@@ -45,7 +52,7 @@ export class ExpenseComponent {
   }
 
   loadExpenses() {
-    this.transactionsService.getExpenses(1).subscribe(
+    this.transactionsService.getExpenses(this.loggedInUserId).subscribe(
       (response: Expense[]) => {
         this.expensesList = response; 
       },
@@ -58,7 +65,7 @@ export class ExpenseComponent {
   saveExpense() {
     if (this.expense.amount && this.expense.category && this.expense.date) {
       const newExpense: Expense = {
-        user_id: 1,
+        user_id: this.loggedInUserId,
         amount: parseInt(this.expense.amount),
         category: this.expense.category,
         date: new Date(this.expense.date).toISOString().split('T')[0],

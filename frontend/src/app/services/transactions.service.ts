@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -16,7 +16,8 @@ export class TransactionsService {
   }
   //Method to get income
   getIncomes(userID: any): Observable<any> {
-    return this.http.get(`${this.baseUrl}/incomes`, userID);
+    const params = new HttpParams().set('user_id', userID); 
+    return this.http.get(`${this.baseUrl}/incomes`, { params });
   }
   //Method to delete income
   deleteIncome(incomeID: any): Observable<any> {
@@ -28,7 +29,8 @@ export class TransactionsService {
   }
   //Method to get expenses
   getExpenses(userID: any): Observable<any> {
-    return this.http.get(`${this.baseUrl}/expenses`, userID);
+    const params = new HttpParams().set('user_id', userID); 
+    return this.http.get(`${this.baseUrl}/expenses`, { params });
   }
   //Method to delete expenses
   deleteExpense(expenseID: any): Observable<any> {
@@ -40,7 +42,8 @@ export class TransactionsService {
   }
   //Method to get budget
   getBudget(userID: any): Observable<any> {
-    return this.http.get(`${this.baseUrl}/budget`, userID);
+    const params = new HttpParams().set('user_id', userID); 
+    return this.http.get(`${this.baseUrl}/budget`, { params });
   }
   //Method to delete budget
   deleteBudget(budgetId: any): Observable<any> {

@@ -45,12 +45,13 @@ describe('TransactionsService', () => {
     it('should send a GET request to get incomes', () => {
       const userID = 1;
       const mockIncomes = [{ amount: 1000, description: 'Salary' }];
+      const url = `${baseUrl}/incomes?user_id=${userID}`;
 
       service.getIncomes(userID).subscribe(response => {
         expect(response).toEqual(mockIncomes);
       });
 
-      const req = httpMock.expectOne(`${baseUrl}/incomes`);
+      const req = httpMock.expectOne(url);
       expect(req.request.method).toBe('GET');
 
       req.flush(mockIncomes);
@@ -92,12 +93,13 @@ describe('TransactionsService', () => {
     it('should send a GET request to get expenses', () => {
       const userID = 1;
       const mockExpenses = [{ amount: 500, description: 'Groceries' }];
+      const url = `${baseUrl}/expenses?user_id=${userID}`;
 
       service.getExpenses(userID).subscribe(response => {
         expect(response).toEqual(mockExpenses);
       });
 
-      const req = httpMock.expectOne(`${baseUrl}/expenses`);
+      const req = httpMock.expectOne(url);
       expect(req.request.method).toBe('GET');
 
       req.flush(mockExpenses);
@@ -139,12 +141,13 @@ describe('TransactionsService', () => {
     it('should send a GET request to get budget', () => {
       const userID = 1;
       const mockBudget = { amount: 2000, category: 'Monthly Budget' };
+      const url = `${baseUrl}/budget?user_id=${userID}`;
 
       service.getBudget(userID).subscribe(response => {
         expect(response).toEqual(mockBudget);
       });
 
-      const req = httpMock.expectOne(`${baseUrl}/budget`);
+      const req = httpMock.expectOne(url);
       expect(req.request.method).toBe('GET');
 
       req.flush(mockBudget);
