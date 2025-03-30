@@ -54,15 +54,25 @@ type Income struct {
 	CreatedAt   string  `json:"created_at"`
 }
 
+type UpcomingPayment struct {
+	ID          uint    `json:"id" gorm:"primaryKey"`
+	UserID      uint    `json:"user_id"`
+	Amount      float64 `json:"amount"`
+	Type        string  `json:"type" gorm:"check:type IN ('expense', 'income')"`
+	Category    string  `json:"category"`
+	Description string  `json:"description"`
+	DueDate     string  `json:"due_date"`
+	Status      string  `json:"status" gorm:"check:status IN ('pending', 'paid', 'cancelled');default:'pending'"`
+}
 
 func initDB() {
 	var err error
-	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
+	dsn := "host=localhost user=postgres password=Pavan@257 dbname=fintrack port=5432 sslmode=disable"
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database")
 	}
-	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{})
+	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{}, &UpcomingPayment{})
 }
 
 func main() {
@@ -89,6 +99,10 @@ func main() {
 	router.POST("/incomes", AddIncome)
 	router.GET("/incomes", GetIncomes)
 	router.DELETE("/incomes/:id", DeleteIncome)
+	router.POST("/upcoming-payments", AddUpcomingPayment)
+	router.GET("/upcoming-payments", GetUpcomingPayments)
+	router.DELETE("/upcoming-payments/:id", DeleteUpcomingPayment)
+	router.PUT("/upcoming-payments/:id/mark-as-paid", MarkUpcomingPaymentAsPaid)
 
 	router.Run(":8080")
 }
@@ -288,4 +302,94 @@ func DeleteBudget(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Budget deleted"})
+}
+
+// Add these handler functions for upcoming payments
+func AddUpcomingPayment(c *gin.Context) {
+	var payment UpcomingPayment
+	if err := c.ShouldBindJSON(&payment); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	// Default status to pending if not provided
+	if payment.Status == "" {
+		payment.Status = "pending"
+	}
+
+	if err := db.Create(&payment).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save upcoming payment"})
+		return
+	}
+
+	c.JSON(http.StatusOK, payment)
+}
+
+func GetUpcomingPayments(c *gin.Context) {
+	var payments []UpcomingPayment
+
+	// Allow filtering by status and type
+	status := c.Query("status")
+	paymentType := c.Query("type")
+	userID := c.Query("user_id")
+
+	query := db.Model(&UpcomingPayment{})
+
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
+	if paymentType != "" {
+		query = query.Where("type = ?", paymentType)
+	}
+
+	if userID != "" {
+		query = query.Where("user_id = ?", userID)
+	}
+
+	result := query.Find(&payments)
+
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve upcoming payments"})
+		return
+	}
+
+	if len(payments) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No upcoming payments found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, payments)
+}
+
+func DeleteUpcomingPayment(c *gin.Context) {
+	id := c.Param("id")
+
+	if err := db.Delete(&UpcomingPayment{}, id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete upcoming payment"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Upcoming payment deleted"})
+}
+
+func MarkUpcomingPaymentAsPaid(c *gin.Context) {
+	id := c.Param("id")
+	var payment UpcomingPayment
+
+	// Find the payment
+	if err := db.First(&payment, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Upcoming payment not found"})
+		return
+	}
+
+	// Change status to paid
+	payment.Status = "paid"
+
+	// Save the updated payment
+	if err := db.Save(&payment).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update payment status"})
+		return
+	}
+
 }
