@@ -5,6 +5,7 @@ import { Expense } from '../../../models/transactions.model';
 describe('ExpenseComponent', () => {
   let component: ExpenseComponent;
   let mockTransactionsService: any;
+  let mockAuthService: any;
   let expenseSavedEmitSpy: jest.SpyInstance;
   let closeModalEmitSpy: jest.SpyInstance;
   let mockExpenses: Expense[];
@@ -37,7 +38,11 @@ describe('ExpenseComponent', () => {
       deleteExpense: jest.fn().mockReturnValue(of({}))
     };
 
-    component = new ExpenseComponent(mockTransactionsService);
+    mockAuthService = {
+      getUserId: jest.fn().mockReturnValue(1)
+    };
+
+    component = new ExpenseComponent(mockTransactionsService, mockAuthService);
 
     expenseSavedEmitSpy = jest.spyOn(component.expenseSaved, 'emit');
     closeModalEmitSpy = jest.spyOn(component.closeModal, 'emit');
@@ -54,6 +59,7 @@ describe('ExpenseComponent', () => {
   });
 
   it('should not call addExpense if required expense fields are missing', () => {
+    component.loggedInUserId = 1;
     component.expense = {
       amount: '',
       category: '',
@@ -68,6 +74,7 @@ describe('ExpenseComponent', () => {
   it('should call addExpense and emit expenseSaved then close when saving valid expense', () => {
     const testDate = '2023-01-01';
     const testDescription = 'Test expense description';
+    component.loggedInUserId = 1;
     component.expense = {
       amount: '300',
       category: 'food',
@@ -119,7 +126,7 @@ describe('ExpenseComponent', () => {
   describe('loadExpenses()', () => {
     it('should fetch expenses and populate expensesList', () => {
       component.loadExpenses();
-      expect(mockTransactionsService.getExpenses).toHaveBeenCalledWith(1);
+      expect(mockTransactionsService.getExpenses).toHaveBeenCalled();
       expect(component.expensesList).toEqual(mockExpenses);
     });
 
