@@ -21,6 +21,8 @@ import { BudgetComponent } from './pages/transactions/budget/budget.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
 import { TransactionsService } from './services/transactions.service';
+import { ObjectivesComponent } from './pages/objectives/objectives.component';
+
 
 @NgModule({
   declarations: [
@@ -32,7 +34,8 @@ import { TransactionsService } from './services/transactions.service';
     HeaderComponent,
     ExpenseComponent,
     IncomeComponent,
-    BudgetComponent
+    BudgetComponent,
+    ObjectivesComponent
   ],
   imports: [
     BrowserAnimationsModule,

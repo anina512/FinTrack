@@ -49,4 +49,23 @@ export class TransactionsService {
   deleteBudget(budgetId: any): Observable<any> {
     return this.http.delete(`${this.baseUrl}/budget/${budgetId}`);
   }
+  getUpcomingPayments(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/upcoming-payments?user_id=${userId}`);
+  }
+
+  // Add a new upcoming payment
+  addUpcomingPayment(payment: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/upcoming-payments`, payment);
+  }
+
+  // Delete an upcoming payment
+  deleteUpcomingPayment(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/upcoming-payments/${id}`);
+  }
+
+  // Mark an upcoming payment as paid
+  markAsPaid(id: number): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/upcoming-payments/${id}/mark-as-paid`, {});
+  }
+
 }

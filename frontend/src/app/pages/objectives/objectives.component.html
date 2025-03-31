@@ -1,0 +1,56 @@
+<div class="objectives-container">
+  <h1>Objectives</h1>
+
+  <!-- Existing Objectives List -->
+  <div class="card objectives-card">
+    <h2><i class="fas fa-bullseye"></i> Your Objectives</h2>
+    <ul>
+      <li *ngFor="let objective of objectivesList">
+        {{ objective.name }} - {{ objective.status }}
+      </li>
+    </ul>
+  </div>
+
+  <!-- Upcoming Payments Section -->
+  <div class="card upcoming-payments">
+    <h2><i class="fas fa-calendar-alt"></i> Upcoming Payments</h2>
+    <ul>
+      <li *ngFor="let payment of upcomingPayments">
+        {{ payment.description }} ({{ payment.amount }}) - Due: {{ payment.dueDate }} - Status: {{ payment.status }}
+        <button *ngIf="payment.status !== 'paid'" (click)="markAsPaid(payment.id)">Mark as Paid</button>
+        <button (click)="deletePayment(payment.id)">Delete</button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Add New Upcoming Payment Form -->
+  <div class="card add-payment">
+    <h2><i class="fas fa-plus"></i> Add Upcoming Payment</h2>
+    <form (ngSubmit)="addPayment()">
+      <div>
+        <label>Description:</label>
+        <input type="text" [(ngModel)]="newPayment.description" name="description" required />
+      </div>
+      <div>
+        <label>Amount:</label>
+        <input type="number" [(ngModel)]="newPayment.amount" name="amount" required />
+      </div>
+      <div>
+        <label>Type:</label>
+        <select [(ngModel)]="newPayment.type" name="type" required>
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+      <div>
+        <label>Category:</label>
+        <input type="text" [(ngModel)]="newPayment.category" name="category" required />
+      </div>
+      <div>
+        <label>Due Date:</label>
+        <input type="date" [(ngModel)]="newPayment.dueDate" name="dueDate" required />
+      </div>
+      <button type="submit">Add Payment</button>
+    </form>
+  </div>
+</div>
