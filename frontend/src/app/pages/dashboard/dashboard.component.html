@@ -14,8 +14,8 @@
                 <canvas id="incomeChart"></canvas>
               </div>
               <div class="card-footer">
-                <p>${{ income.toLocaleString() }}</p>
-                <small>+2.5% compared to last year</small>
+                <p>Total Income: ${{ income.toLocaleString() }}</p>
+                <small>{{ incomeComparisonText }}</small>
               </div>
               <div class="button-container row-buttons">
                 <button class="btn add-income" (click)="openIncomeModal()">
@@ -34,8 +34,8 @@
                 <canvas id="expensesChart"></canvas>
               </div>
               <div class="card-footer">
-                <p>${{ expenses.toLocaleString() }}</p>
-                <small>-1.8% compared to last year</small>
+                <p>Total Expense: ${{ expenses.toLocaleString() }}</p>
+                <small>{{expenseComparisonText}}</small>
               </div>
               <div class="button-container row-buttons">
                 <button class="btn add-expense" (click)="openExpenseModal()">

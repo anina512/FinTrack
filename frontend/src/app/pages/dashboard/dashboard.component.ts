@@ -1,5 +1,5 @@
 import { Component, OnInit, AfterViewInit, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
-import { Chart, registerables, ChartConfiguration } from 'chart.js';
+import { Chart, registerables } from 'chart.js';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ExpenseComponent } from '../transactions/expense/expense.component';
 import { SideNavComponent } from '../../shared/side-nav/side-nav.component';
@@ -10,7 +10,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { startOfDay, subDays, isSameDay, format, parseISO } from 'date-fns';
 
-// Define an interface for chart data to ensure proper types.
 interface ChartData {
   labels: string[];
   datasets: {
@@ -38,13 +37,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   showBudgetModal = false;
   budgetMode: 'add' | 'view' = 'add'; 
 
-  // Mock Data for other charts remain as-is.
   savings = 89236;
-  income = 27632;
-  expenses = 27632;
+  income = 0;
+  expenses = 0;
   loggedInUserId: number | null = null;
+  incomeComparisonText = '';
+  expenseComparisonText = '';
 
-  // Chart Data definitions
   savingsChartData = {
     labels: ['Saved', 'Remaining'],
     datasets: [
@@ -56,7 +55,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ],
   };
 
-  // Initialize incomeChartData with empty arrays.
   incomeChartData = {
     labels: [] as string[],
     datasets: [
@@ -69,23 +67,20 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ],
   };
 
-  // Updated expensesChartData for a pie chart by category.
   expensesChartData = {
     labels: [] as string[],
     datasets: [
       {
         label: 'Expenses by Category',
         data: [] as number[],
-        // Colors for each category. Adjust/expand as needed.
         backgroundColor: ['#e74c3c', '#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#2ecc71', '#34495e', '#95a5a6', '#e67e22'],
         borderWidth: 0,
       },
     ],
   };
 
-  // Weekly expenses chart data with explicit type annotation.
   weeklyExpensesChartData: ChartData = {
-    labels: [], // Will be populated dynamically
+    labels: [],
     datasets: [
       {
         label: 'Weekly Expenses',
@@ -95,29 +90,25 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ],
   };
 
-  // Store chart instances so we can update them later.
   weeklyExpensesChart: Chart | null = null;
   incomeChart: Chart | null = null;
-  // New chart instance for expenses pie chart.
   expensesChart: Chart | null = null;
 
-  // Predefined income categories. Any income not matching these goes into "Other".
   incomeCategories = ['Salary', 'Freelance', 'Business', 'Investments', 'Rent', 'Benefits', 'Gifts', 'Other'];
 
-  // Predefined expense categories – expanded to be more exhaustive and include specific bill payment types.
   expenseCategories = [
-    'Housing',        // e.g., mortgage or rent
-    'Utilities',      // e.g., electricity, water, gas
+    'Housing',
+    'Utilities',
     'Food',
     'Transportation',
     'Healthcare',
     'Insurance',
-    'Bills',          // Generic bill payments (could include subscriptions, phone, internet, etc.)
+    'Bills',
     'Education',
     'Entertainment',
     'Fitness',
     'Personal Care',
-    'Miscellaneous'   // For any uncategorized expenses
+    'Miscellaneous'
   ];
 
   constructor(
@@ -134,25 +125,21 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.loggedInUserId = this.authService.getUserId();
-    // Fetch income data and update the pie chart
     if (this.loggedInUserId) {
       this.fetchIncomeData(this.loggedInUserId);
       this.fetchExpenseData(this.loggedInUserId);
-      this.fetchWeeklyExpenses(this.loggedInUserId);
     }
+    this.fetchWeeklyExpenses(this.loggedInUserId);
   }
 
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.cdr.detectChanges();
-
-      // Slight delay to ensure canvas elements are available
       setTimeout(() => {
         const savingsCanvas = document.getElementById('savingsChart') as HTMLCanvasElement;
         const incomeCanvas = document.getElementById('incomeChart') as HTMLCanvasElement;
         const expensesCanvas = document.getElementById('expensesChart') as HTMLCanvasElement;
         const weeklyExpensesCanvas = document.getElementById('weeklyExpensesChart') as HTMLCanvasElement;
-
         if (savingsCanvas && incomeCanvas && expensesCanvas && weeklyExpensesCanvas) {
           new Chart(savingsCanvas, {
             type: 'doughnut',
@@ -166,8 +153,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
               cutout: '70%',
             },
           });
-
-          // Create and store the income pie chart instance.
           this.incomeChart = new Chart(incomeCanvas, {
             type: 'doughnut',
             data: this.incomeChartData,
@@ -180,8 +165,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
               cutout: '70%',
             },
           });
-
-          // Create and store the expenses pie chart instance.
           this.expensesChart = new Chart(expensesCanvas, {
             type: 'doughnut',
             data: this.expensesChartData,
@@ -194,8 +177,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
               cutout: '70%',
             },
           });
-
-          // Create and store the weekly expenses chart instance.
           this.weeklyExpensesChart = new Chart(weeklyExpensesCanvas, {
             type: 'bar',
             data: this.weeklyExpensesChartData,
@@ -225,16 +206,26 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     }
   }
 
-  /**
-   * Fetch income data from the database, aggregate amounts by category,
-   * and update the income chart.
-   */
   fetchIncomeData(userId: number): void {
     this.transactionsService.getIncomes(userId).subscribe((incomes: any[]) => {
+      let totalIncome = 0;
+      let currentMonthTotal = 0;
+      let previousMonthTotal = 0;
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const previousMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
       const categoryTotals: { [key: string]: number } = {};
       this.incomeCategories.forEach(cat => categoryTotals[cat] = 0);
-
       incomes.forEach(income => {
+        totalIncome += income.amount;
+        const incomeDate = parseISO(income.date);
+        if (incomeDate.getMonth() === currentMonth && incomeDate.getFullYear() === currentYear) {
+          currentMonthTotal += income.amount;
+        } else if (incomeDate.getMonth() === previousMonth && incomeDate.getFullYear() === previousMonthYear) {
+          previousMonthTotal += income.amount;
+        }
         const cat = income.category;
         if (this.incomeCategories.includes(cat)) {
           categoryTotals[cat] += income.amount;
@@ -242,14 +233,17 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           categoryTotals['Other'] += income.amount;
         }
       });
-
+      this.income = totalIncome;
+      let percentDiff = 0;
+      if (previousMonthTotal > 0) {
+        percentDiff = ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100;
+      }
+      this.incomeComparisonText = previousMonthTotal > 0 ? `${percentDiff.toFixed(1)}% compared to last month` : 'No data for previous month';
       const labels = Object.keys(categoryTotals);
       const data = labels.map(label => categoryTotals[label]);
-
       this.incomeChartData.labels = labels;
       this.incomeChartData.datasets[0].data = data;
       this.cdr.detectChanges();
-
       if (this.incomeChart) {
         this.incomeChart.data = this.incomeChartData;
         this.incomeChart.update();
@@ -259,33 +253,44 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  /**
-   * Fetch expense data from the database, aggregate amounts by category,
-   * and update the expenses pie chart.
-   */
   fetchExpenseData(userId: number): void {
     this.transactionsService.getExpenses(userId).subscribe((expenses: any[]) => {
-      // Initialize totals for each expense category.
+      let totalExpenses = 0;
+      let currentMonthTotal = 0;
+      let previousMonthTotal = 0;
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const previousMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
       const categoryTotals: { [key: string]: number } = {};
       this.expenseCategories.forEach(cat => categoryTotals[cat] = 0);
-
       expenses.forEach(expense => {
+        totalExpenses += expense.amount;
+        const expenseDate = parseISO(expense.date);
+        if (expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear) {
+          currentMonthTotal += expense.amount;
+        } else if (expenseDate.getMonth() === previousMonth && expenseDate.getFullYear() === previousMonthYear) {
+          previousMonthTotal += expense.amount;
+        }
         const cat = expense.category;
-        // If the category exists in our predefined list, add the amount; otherwise, add to 'Miscellaneous'
         if (this.expenseCategories.includes(cat)) {
           categoryTotals[cat] += expense.amount;
         } else {
           categoryTotals['Miscellaneous'] += expense.amount;
         }
       });
-
+      this.expenses = totalExpenses;
+      let percentDiff = 0;
+      if (previousMonthTotal > 0) {
+        percentDiff = ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100;
+      }
+      this.expenseComparisonText = previousMonthTotal > 0 ? `${percentDiff.toFixed(1)}% compared to last month` : 'No data for previous month';
       const labels = Object.keys(categoryTotals);
       const data = labels.map(label => categoryTotals[label]);
-
       this.expensesChartData.labels = labels;
       this.expensesChartData.datasets[0].data = data;
       this.cdr.detectChanges();
-
       if (this.expensesChart) {
         this.expensesChart.data = this.expensesChartData;
         this.expensesChart.update();
@@ -295,10 +300,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  /**
-   * Fetch expenses from the database for the past week (last 7 days) and update the chart.
-   * Assumes expense.date is in "YYYY-MM-DD" format.
-   */
   fetchWeeklyExpenses(userId: number | null): void {
     this.transactionsService.getExpenses(userId).subscribe((expenses: any[]) => {
       const today = startOfDay(new Date());
@@ -306,11 +307,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       for (let i = 6; i >= 0; i--) {
         pastWeekDates.push(subDays(today, i));
       }
-
       this.weeklyExpensesChartData.labels = pastWeekDates.map(date => format(date, 'EEE'));
-
       const weeklyTotals = new Array(7).fill(0);
-
       expenses.forEach(expense => {
         const expenseDate = parseISO(expense.date);
         if (expenseDate >= pastWeekDates[0] && expenseDate <= today) {
@@ -321,10 +319,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           });
         }
       });
-
       this.weeklyExpensesChartData.datasets[0].data = weeklyTotals;
       this.cdr.detectChanges();
-
       if (this.weeklyExpensesChart) {
         this.weeklyExpensesChart.data = this.weeklyExpensesChartData;
         this.weeklyExpensesChart.update();
@@ -346,7 +342,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   closeExpenseModal() {
     this.showExpenseModal = false;
-    // Refresh both weekly and pie chart expenses.
     this.fetchWeeklyExpenses(this.loggedInUserId);
     if (this.loggedInUserId) {
       this.fetchExpenseData(this.loggedInUserId);

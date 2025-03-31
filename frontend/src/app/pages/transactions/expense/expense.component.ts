@@ -34,18 +34,18 @@ export class ExpenseComponent {
   };
 
   categories = [
-    'Housing',
-    'Utilities',
+    'Housing',       
+    'Utilities',      
     'Food',
     'Transportation',
     'Healthcare',
     'Insurance',
+    'Bills',         
     'Education',
     'Entertainment',
-    'Travel',
-    'Personal Care',
     'Fitness',
-    'Miscellaneous'
+    'Personal Care',
+    'Miscellaneous'   
   ];
   
   loggedInUserId: number | null = 1;
