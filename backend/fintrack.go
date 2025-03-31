@@ -27,7 +27,7 @@ type Expense struct {
 	ID          uint    `json:"id" gorm:"primaryKey"`
 	UserID      uint    `json:"user_id"`
 	Amount      float64 `json:"amount"`
-	Category    string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
+	Category    string  `json:"category"`
 	Description string  `json:"description"`
 	Date        string  `json:"date"`
 	CreatedAt   string  `json:"created_at"`

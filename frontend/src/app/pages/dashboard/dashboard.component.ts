@@ -38,7 +38,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   showBudgetModal = false;
   budgetMode: 'add' | 'view' = 'add'; 
 
-  // Mock Data
+  // Mock Data for other charts remain as-is.
   savings = 89236;
   income = 27632;
   expenses = 27632;
@@ -56,23 +56,28 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ],
   };
 
+  // Initialize incomeChartData with empty arrays.
   incomeChartData = {
-    labels: ['Income', 'Other'],
+    labels: [] as string[],
     datasets: [
       {
-        data: [70, 30],
-        backgroundColor: ['#2ecc71', '#ecf0f1'],
+        label: 'Income by Category',
+        data: [] as number[],
+        backgroundColor: ['#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#1abc9c', '#34495e', '#e74c3c', '#95a5a6'],
         borderWidth: 0,
       },
     ],
   };
 
+  // Updated expensesChartData for a pie chart by category.
   expensesChartData = {
-    labels: ['Expenses', 'Remaining'],
+    labels: [] as string[],
     datasets: [
       {
-        data: [55, 45],
-        backgroundColor: ['#e74c3c', '#ecf0f1'],
+        label: 'Expenses by Category',
+        data: [] as number[],
+        // Colors for each category. Adjust/expand as needed.
+        backgroundColor: ['#e74c3c', '#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#2ecc71', '#34495e', '#95a5a6', '#e67e22'],
         borderWidth: 0,
       },
     ],
@@ -90,8 +95,30 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ],
   };
 
-  // Store the weekly expenses chart instance so we can update it later.
+  // Store chart instances so we can update them later.
   weeklyExpensesChart: Chart | null = null;
+  incomeChart: Chart | null = null;
+  // New chart instance for expenses pie chart.
+  expensesChart: Chart | null = null;
+
+  // Predefined income categories. Any income not matching these goes into "Other".
+  incomeCategories = ['Salary', 'Freelance', 'Business', 'Investments', 'Rent', 'Benefits', 'Gifts', 'Other'];
+
+  // Predefined expense categories – expanded to be more exhaustive and include specific bill payment types.
+  expenseCategories = [
+    'Housing',        // e.g., mortgage or rent
+    'Utilities',      // e.g., electricity, water, gas
+    'Food',
+    'Transportation',
+    'Healthcare',
+    'Insurance',
+    'Bills',          // Generic bill payments (could include subscriptions, phone, internet, etc.)
+    'Education',
+    'Entertainment',
+    'Fitness',
+    'Personal Care',
+    'Miscellaneous'   // For any uncategorized expenses
+  ];
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -107,7 +134,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.loggedInUserId = this.authService.getUserId();
-    this.fetchWeeklyExpenses(this.loggedInUserId);
+    // Fetch income data and update the pie chart
+    if (this.loggedInUserId) {
+      this.fetchIncomeData(this.loggedInUserId);
+      this.fetchExpenseData(this.loggedInUserId);
+      this.fetchWeeklyExpenses(this.loggedInUserId);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -135,7 +167,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             },
           });
 
-          new Chart(incomeCanvas, {
+          // Create and store the income pie chart instance.
+          this.incomeChart = new Chart(incomeCanvas, {
             type: 'doughnut',
             data: this.incomeChartData,
             options: {
@@ -148,7 +181,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             },
           });
 
-          new Chart(expensesCanvas, {
+          // Create and store the expenses pie chart instance.
+          this.expensesChart = new Chart(expensesCanvas, {
             type: 'doughnut',
             data: this.expensesChartData,
             options: {
@@ -192,6 +226,76 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * Fetch income data from the database, aggregate amounts by category,
+   * and update the income chart.
+   */
+  fetchIncomeData(userId: number): void {
+    this.transactionsService.getIncomes(userId).subscribe((incomes: any[]) => {
+      const categoryTotals: { [key: string]: number } = {};
+      this.incomeCategories.forEach(cat => categoryTotals[cat] = 0);
+
+      incomes.forEach(income => {
+        const cat = income.category;
+        if (this.incomeCategories.includes(cat)) {
+          categoryTotals[cat] += income.amount;
+        } else {
+          categoryTotals['Other'] += income.amount;
+        }
+      });
+
+      const labels = Object.keys(categoryTotals);
+      const data = labels.map(label => categoryTotals[label]);
+
+      this.incomeChartData.labels = labels;
+      this.incomeChartData.datasets[0].data = data;
+      this.cdr.detectChanges();
+
+      if (this.incomeChart) {
+        this.incomeChart.data = this.incomeChartData;
+        this.incomeChart.update();
+      }
+    }, error => {
+      console.error('Error fetching incomes:', error);
+    });
+  }
+
+  /**
+   * Fetch expense data from the database, aggregate amounts by category,
+   * and update the expenses pie chart.
+   */
+  fetchExpenseData(userId: number): void {
+    this.transactionsService.getExpenses(userId).subscribe((expenses: any[]) => {
+      // Initialize totals for each expense category.
+      const categoryTotals: { [key: string]: number } = {};
+      this.expenseCategories.forEach(cat => categoryTotals[cat] = 0);
+
+      expenses.forEach(expense => {
+        const cat = expense.category;
+        // If the category exists in our predefined list, add the amount; otherwise, add to 'Miscellaneous'
+        if (this.expenseCategories.includes(cat)) {
+          categoryTotals[cat] += expense.amount;
+        } else {
+          categoryTotals['Miscellaneous'] += expense.amount;
+        }
+      });
+
+      const labels = Object.keys(categoryTotals);
+      const data = labels.map(label => categoryTotals[label]);
+
+      this.expensesChartData.labels = labels;
+      this.expensesChartData.datasets[0].data = data;
+      this.cdr.detectChanges();
+
+      if (this.expensesChart) {
+        this.expensesChart.data = this.expensesChartData;
+        this.expensesChart.update();
+      }
+    }, error => {
+      console.error('Error fetching expenses:', error);
+    });
+  }
+
+  /**
    * Fetch expenses from the database for the past week (last 7 days) and update the chart.
    * Assumes expense.date is in "YYYY-MM-DD" format.
    */
@@ -203,13 +307,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         pastWeekDates.push(subDays(today, i));
       }
 
-      // Update chart labels dynamically using day abbreviations (e.g., Mon, Tue, etc.)
       this.weeklyExpensesChartData.labels = pastWeekDates.map(date => format(date, 'EEE'));
 
-      // Initialize totals array for each day
       const weeklyTotals = new Array(7).fill(0);
 
-      // Process expenses within the past week (from earliest date to today)
       expenses.forEach(expense => {
         const expenseDate = parseISO(expense.date);
         if (expenseDate >= pastWeekDates[0] && expenseDate <= today) {
@@ -221,17 +322,15 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         }
       });
 
-      // Update the chart data with computed totals
       this.weeklyExpensesChartData.datasets[0].data = weeklyTotals;
       this.cdr.detectChanges();
 
-      // If the chart instance exists, update its data and redraw it.
       if (this.weeklyExpensesChart) {
         this.weeklyExpensesChart.data = this.weeklyExpensesChartData;
         this.weeklyExpensesChart.update();
       }
     }, error => {
-      console.error('Error fetching expenses:', error);
+      console.error('Error fetching weekly expenses:', error);
     });
   }
 
@@ -247,13 +346,20 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   closeExpenseModal() {
     this.showExpenseModal = false;
+    // Refresh both weekly and pie chart expenses.
     this.fetchWeeklyExpenses(this.loggedInUserId);
+    if (this.loggedInUserId) {
+      this.fetchExpenseData(this.loggedInUserId);
+    }
   }
 
   onExpenseSaved(expenseData: any) {
     this.expenseInstance.saveExpense();
     console.log('New expense:', expenseData);
     this.fetchWeeklyExpenses(this.loggedInUserId);
+    if (this.loggedInUserId) {
+      this.fetchExpenseData(this.loggedInUserId);
+    }
   }
 
   openIncomeModal() {
@@ -283,6 +389,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   onIncomeSaved(incomeData: any) {
     this.incomeInstance.saveIncome();
     console.log('New income:', incomeData);
+    if (this.loggedInUserId) {
+      this.fetchIncomeData(this.loggedInUserId);
+    }
   }
 
   closeBudgetModal() {

@@ -33,9 +33,22 @@ export class ExpenseComponent {
     description: ''
   };
 
-  categories = ['bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others'];
-
-  loggedInUserId: number | null = null;
+  categories = [
+    'Housing',
+    'Utilities',
+    'Food',
+    'Transportation',
+    'Healthcare',
+    'Insurance',
+    'Education',
+    'Entertainment',
+    'Travel',
+    'Personal Care',
+    'Fitness',
+    'Miscellaneous'
+  ];
+  
+  loggedInUserId: number | null = 1;
 
   constructor(
     private transactionsService: TransactionsService,
