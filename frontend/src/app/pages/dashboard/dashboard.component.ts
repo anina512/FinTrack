@@ -9,6 +9,7 @@ import { TransactionsService } from '../../services/transactions.service';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { startOfDay, subDays, isSameDay, format, parseISO } from 'date-fns';
+import { ActivitiesModalComponent } from '../../activities-modal/activities-modal.component';
 
 interface ChartData {
   labels: string[];
@@ -24,7 +25,7 @@ interface ChartData {
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [CommonModule, ExpenseComponent, IncomeComponent, SideNavComponent, BudgetComponent, HttpClientModule],
+  imports: [CommonModule, ExpenseComponent, IncomeComponent, SideNavComponent, BudgetComponent, ActivitiesModalComponent,HttpClientModule],
   providers: [ExpenseComponent, IncomeComponent, BudgetComponent, TransactionsService, AuthService],
   standalone: true
 })
@@ -36,6 +37,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   incomeMode: 'add' | 'view' = 'add'; 
   showBudgetModal = false;
   budgetMode: 'add' | 'view' = 'add'; 
+  showActivitiesModal = false;
 
   savings = 89236;
   income = 0;
@@ -95,6 +97,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   expensesChart: Chart | null = null;
   upcomingPayments: any[] = [];
 
+  allIncomes: any[] = [];
+  allExpenses: any[] = [];
+
   incomeCategories = ['Salary', 'Freelance', 'Business', 'Investments', 'Rent', 'Benefits', 'Gifts', 'Other'];
 
   expenseCategories = [
@@ -130,7 +135,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       this.fetchIncomeData(this.loggedInUserId);
       this.fetchExpenseData(this.loggedInUserId);
       this.fetchWeeklyExpenses(this.loggedInUserId);
-      this.fetchUpcomingPayments(this.loggedInUserId)
+      this.fetchUpcomingPayments(this.loggedInUserId);
+
+      this.fetchAllIncomes(this.loggedInUserId);
+      this.fetchAllExpenses(this.loggedInUserId);
     }
   }
 
@@ -344,6 +352,30 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
+  fetchAllIncomes(userId: number): void {
+    this.transactionsService.getIncomes(userId).subscribe((incomes: any[]) => {
+      // Assign all incomes directly to `allIncomes`
+      this.allIncomes = incomes;
+  
+      // Trigger change detection to update the view
+      this.cdr.detectChanges();
+    }, error => {
+      console.error('Error fetching all incomes:', error);
+    });
+  }  
+  
+  fetchAllExpenses(userId: number): void {
+    this.transactionsService.getExpenses(userId).subscribe((expenses: any[]) => {
+      // Assign all expenses directly to `allExpenses`
+      this.allExpenses = expenses;
+  
+      // Trigger change detection to update the view
+      this.cdr.detectChanges();
+    }, error => {
+      console.error('Error fetching all expenses:', error);
+    });
+  }  
+
   markAsPaid(payment: any): void {
     if (!payment || payment.Paid) {
       return;
@@ -387,6 +419,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       this.fetchExpenseData(this.loggedInUserId);
       this.fetchWeeklyExpenses(this.loggedInUserId);
       this.fetchUpcomingPayments(this.loggedInUserId);
+      this.fetchAllIncomes(this.loggedInUserId);
+      this.fetchAllExpenses(this.loggedInUserId);
     }
   }
 
@@ -419,6 +453,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     console.log('New income:', incomeData);
     if (this.loggedInUserId) {
       this.fetchIncomeData(this.loggedInUserId);
+      this.fetchAllIncomes(this.loggedInUserId);
+      this.fetchAllExpenses(this.loggedInUserId);
     }
   }
 
@@ -429,5 +465,24 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   onBudgetSaved(budgetData: any) {
     this.budgetInstance.saveBudget();
     console.log('New budget:', budgetData);
+    if (this.loggedInUserId){
+      this.fetchAllIncomes(this.loggedInUserId);
+      this.fetchAllExpenses(this.loggedInUserId);
+    }
   }
+
+  openActivitiesModal(): void {
+    this.showActivitiesModal = true;
+    this.allIncomes = this.allIncomes; 
+    this.allExpenses = this.allExpenses; 
+  }  
+
+  closeActivitiesModal(): void {
+    this.showActivitiesModal = false;
+  }
+  
 }
+function subMonths(arg0: Date, arg1: number) {
+  throw new Error('Function not implemented.');
+}
+

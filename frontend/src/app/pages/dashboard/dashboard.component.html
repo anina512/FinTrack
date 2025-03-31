@@ -96,16 +96,34 @@
               </li>
             </ul>
           </div>
+
           <div class="card recent-activities">
-            <h2><i class="fas fa-clock"></i> Recent Activities</h2>
-            <ul>
-              <li>Electric Bill - Success</li>
-              <li>Water Installment - Success</li>
-              <li>Phone Bill - Success</li>
-              <li>Internet Bill - Success</li>
-              <li>Home Rental - Pending</li>
-            </ul>
-          </div>
+            <h3>Recent Activities</h3>
+            
+            <!-- Recent Income -->
+            <div class="recent-income">
+              <h4>Income Added</h4>
+              <ul>
+                <li *ngFor="let income of allIncomes | slice:0:3">
+                  {{ income.date | date:'shortDate' }} - {{ income.category }}: ${{ income.amount }}
+                </li>
+              </ul>
+            </div>
+          
+            <!-- Recent Expenses -->
+            <div class="recent-expenses">
+              <h4>Expenses Added</h4>
+              <ul>
+                <li *ngFor="let expense of allExpenses | slice:0:3">
+                  {{ expense.date | date:'shortDate' }} - {{ expense.category }}: ${{ expense.amount }}
+                </li>
+              </ul>
+            </div>
+          
+            <!-- View All Button -->
+            <button (click)="openActivitiesModal()" class="btn btn-primary">View All Activities</button>
+          </div>         
+          
         </div>
         <app-expense 
         *ngIf="showExpenseModal"
@@ -125,6 +143,12 @@
           (closeModal)="closeBudgetModal()"
           (budgetSaved)="onBudgetSaved($event)">
         </app-budget>
+        <app-activities-modal 
+          *ngIf="showActivitiesModal"
+          [allIncomes]="allIncomes"
+          [allExpenses]="allExpenses"
+          (closeModal)="closeActivitiesModal()">
+        </app-activities-modal>
       </div>
     </div>
   </div>
