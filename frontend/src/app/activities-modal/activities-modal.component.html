@@ -1,45 +1,66 @@
 <div class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Recent Activities</h2>
-        <button class="close-btn" (click)="close()">&times;</button>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Recent Activities</h2>
+      <button class="close-btn">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Recent Income Section -->
+      <div class="recent-section">
+        <h3>Recent Incomes</h3>
+        <ng-container *ngIf="allIncomes.length > 0; else noIncome">
+          <table class="transactions-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let income of allIncomes">
+                <td class="date">{{ income.date | date:'shortDate' }}</td>
+                <td class="category">{{ income.category }}</td>
+                <td class="income-amount">+${{ income.amount.toLocaleString() }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
+        <ng-template #noIncome>
+          <div class="no-transactions">No recent income transactions</div>
+        </ng-template>
       </div>
-  
-      <div class="modal-body">
-        <!-- Recent Income Section -->
-        <div class="recent-section">
-          <h3>Recent Incomes</h3>
-          <ul *ngIf="allIncomes.length > 0; else noIncome">
-            <li *ngFor="let income of allIncomes">
-              <span class="date">{{ income.date | date:'shortDate' }}</span>
-              <span class="category">{{ income.category }}</span>
-              <span class="amount">+${{ income.amount.toLocaleString() }}</span>
-            </li>
-          </ul>
-          <ng-template #noIncome>
-            <p>No recent income transactions.</p>
-          </ng-template>
-        </div>
-  
-        <!-- Recent Expenses Section -->
-        <div class="recent-section">
-          <h3>Recent Expenses</h3>
-          <ul *ngIf="allExpenses.length > 0; else noExpense">
-            <li *ngFor="let expense of allExpenses">
-              <span class="date">{{ expense.date | date:'shortDate' }}</span>
-              <span class="category">{{ expense.category }}</span>
-              <span class="amount">-${{ expense.amount.toLocaleString() }}</span>
-            </li>
-          </ul>
-          <ng-template #noExpense>
-            <p>No recent expense transactions.</p>
-          </ng-template>
-        </div>
-      </div>
-  
-      <div class="modal-footer">
-        <button class="btn-close" (click)="close()">Close</button>
+
+      <!-- Recent Expenses Section -->
+      <div class="recent-section">
+        <h3>Recent Expenses</h3>
+        <ng-container *ngIf="allExpenses.length > 0; else noExpense">
+          <table class="transactions-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let expense of allExpenses">
+                <td class="date">{{ expense.date | date:'shortDate' }}</td>
+                <td class="category">{{ expense.category }}</td>
+                <td class="expense-amount">-${{ expense.amount.toLocaleString() }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
+        <ng-template #noExpense>
+          <div class="no-transactions">No recent expense transactions</div>
+        </ng-template>
       </div>
     </div>
+
+    <div class="modal-footer">
+      <button class="btn-close" (click)="close()">Close</button>
+    </div>
   </div>
-  
+</div>
