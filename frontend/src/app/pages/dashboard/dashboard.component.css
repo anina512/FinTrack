@@ -49,6 +49,32 @@
   gap: 15px;
 }
 
+.paid-button {
+  width: 24px; 
+  height: 24px; 
+  border-radius: 50%; 
+  background-color: #4CAF50;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  color: white;
+  font-size: 14px;
+}
+
+.paid-button:hover {
+  background-color: #45a049; 
+  transform: scale(1.1); 
+}
+
+.paid-button:active {
+  background-color: #3e8e41; 
+  transform: scale(1);
+}
+
+
 /* Card Universal Styles */
 .card {
   background: white;
@@ -251,6 +277,7 @@
   .doughnut-chart {
     width: 70%;
   }
+
 }
 
 @media (max-width: 480px) {

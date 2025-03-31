@@ -90,6 +90,7 @@ func main() {
 	router.POST("/incomes", AddIncome)
 	router.GET("/incomes", GetIncomes)
 	router.DELETE("/incomes/:id", DeleteIncome)
+	router.PUT("/expenses/:id/paid", UpdateExpenseStatus)
 
 	router.Run(":8080")
 }
@@ -289,4 +290,30 @@ func DeleteBudget(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Budget deleted"})
+}
+
+func UpdateExpenseStatus(c *gin.Context) {
+	expenseID := c.Param("id")
+
+	var expense Expense
+	if err := db.First(&expense, expenseID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Expense not found"})
+		return
+	}
+
+	var updateData struct {
+		Paid bool `json:"paid"`
+	}
+	if err := c.ShouldBindJSON(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	expense.Paid = updateData.Paid
+	if err := db.Save(&expense).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update expense"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Expense status updated", "expense": expense})
 }

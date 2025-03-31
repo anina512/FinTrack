@@ -85,11 +85,14 @@
             <h2><i class="fas fa-calendar-alt"></i> Upcoming Payments</h2>
             <ul>
               <li *ngFor="let payment of upcomingPayments">
-                <strong>{{ payment.name }}</strong> - ${{ payment.amount }}  
+                <strong>{{ payment.name }}</strong>${{ payment.amount }}  
                 <br />
                 <span>{{ payment.description }}</span>  
                 <br />
                 <small>Due: {{ payment.date | date:'MM/dd/yyyy' }}</small>
+                <button class="paid-button" (click)="markAsPaid(payment)">
+                  <i class="fas fa-check"></i>  
+              </button>
               </li>
             </ul>
           </div>

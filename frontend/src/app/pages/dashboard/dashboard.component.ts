@@ -344,6 +344,24 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
+  markAsPaid(payment: any): void {
+    if (!payment || payment.Paid) {
+      return;
+    }
+  
+    const updatedPayment = { ...payment, Paid: true };
+  
+    this.transactionsService.updateExpense(updatedPayment).subscribe(
+      (response) => {
+        console.log('Payment marked as paid:', response);
+        this.fetchUpcomingPayments(this.loggedInUserId!);
+      },
+      (error) => {
+        console.error('Error updating payment:', error);
+      }
+    );
+  }
+
   openExpenseModal() {
     this.expenseMode = 'add';
     this.showExpenseModal = true;
