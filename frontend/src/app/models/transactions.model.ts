@@ -6,6 +6,7 @@ export interface Expense {
   date: string;       
   description: string;
   created_at: string;   
+  Paid: boolean;
 }
 
 export interface Income {

@@ -31,6 +31,7 @@ type Expense struct {
 	Description string  `json:"description"`
 	Date        string  `json:"date"`
 	CreatedAt   string  `json:"created_at"`
+	Paid		bool  	`json: "Paid"`
 }
 
 // Budget struct

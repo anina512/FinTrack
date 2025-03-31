@@ -84,9 +84,13 @@
           <div class="card upcoming-payments">
             <h2><i class="fas fa-calendar-alt"></i> Upcoming Payments</h2>
             <ul>
-              <li>Home Rental - February 15, 2025</li>
-              <li>Water Installment - February 20, 2025</li>
-              <li>Phone Bill - February 25, 2025</li>
+              <li *ngFor="let payment of upcomingPayments">
+                <strong>{{ payment.name }}</strong> - ${{ payment.amount }}  
+                <br />
+                <span>{{ payment.description }}</span>  
+                <br />
+                <small>Due: {{ payment.date | date:'MM/dd/yyyy' }}</small>
+              </li>
             </ul>
           </div>
           <div class="card recent-activities">

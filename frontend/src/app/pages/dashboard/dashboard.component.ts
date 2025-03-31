@@ -93,6 +93,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   weeklyExpensesChart: Chart | null = null;
   incomeChart: Chart | null = null;
   expensesChart: Chart | null = null;
+  upcomingPayments: any[] = [];
 
   incomeCategories = ['Salary', 'Freelance', 'Business', 'Investments', 'Rent', 'Benefits', 'Gifts', 'Other'];
 
@@ -128,8 +129,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     if (this.loggedInUserId) {
       this.fetchIncomeData(this.loggedInUserId);
       this.fetchExpenseData(this.loggedInUserId);
+      this.fetchWeeklyExpenses(this.loggedInUserId);
+      this.fetchUpcomingPayments(this.loggedInUserId)
     }
-    this.fetchWeeklyExpenses(this.loggedInUserId);
   }
 
   ngAfterViewInit(): void {
@@ -204,6 +206,18 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         }
       }, 100);
     }
+  }
+
+  fetchUpcomingPayments(userId: number): void {
+    this.transactionsService.getExpenses(userId).subscribe((expenses: any[]) => {
+      const today = new Date();
+      this.upcomingPayments = expenses.filter(expense =>
+         !expense.Paid 
+      );
+      this.cdr.detectChanges();
+    }, error => {
+      console.error('Error fetching upcoming payments:', error);
+    });
   }
 
   fetchIncomeData(userId: number): void {
@@ -351,9 +365,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   onExpenseSaved(expenseData: any) {
     this.expenseInstance.saveExpense();
     console.log('New expense:', expenseData);
-    this.fetchWeeklyExpenses(this.loggedInUserId);
     if (this.loggedInUserId) {
       this.fetchExpenseData(this.loggedInUserId);
+      this.fetchWeeklyExpenses(this.loggedInUserId);
+      this.fetchUpcomingPayments(this.loggedInUserId);
     }
   }
 
