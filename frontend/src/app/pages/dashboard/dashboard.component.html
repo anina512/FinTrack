@@ -49,13 +49,13 @@
   
             <!-- Savings Card -->
             <div class="card savings-card">
-              <h2><i class="fas fa-piggy-bank"></i> Savings</h2>
+              <h2><i class="fas fa-piggy-bank"></i> Budget</h2>
               <div class="chart-container doughnut-chart">
                 <canvas id="savingsChart"></canvas>
               </div>
               <div class="card-footer">
-                <p>${{ savings.toLocaleString() }}</p>
-                <small>+3.5% compared to last year</small>
+                <p><strong>Used:</strong> {{ currentMonthExpenses | currency }}</p>
+                <p><strong>Remaining:</strong> {{ (currentMonthBudget - currentMonthExpenses) | currency }}</p>
               </div>
               <div class="button-container row-buttons">
                 <button class="btn add-budget" (click)="openBudgetModal()">

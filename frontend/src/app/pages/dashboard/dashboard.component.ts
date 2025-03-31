@@ -10,6 +10,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { startOfDay, subDays, isSameDay, format, parseISO } from 'date-fns';
 import { ActivitiesModalComponent } from '../../activities-modal/activities-modal.component';
+import { Budget } from '../../models/transactions.model';
 
 interface ChartData {
   labels: string[];
@@ -95,6 +96,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   weeklyExpensesChart: Chart | null = null;
   incomeChart: Chart | null = null;
   expensesChart: Chart | null = null;
+  currentMonthExpenses = 0;
+  currentMonthBudget = 0;
+  savingsChart: Chart | null = null;
   upcomingPayments: any[] = [];
 
   allIncomes: any[] = [];
@@ -139,6 +143,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
       this.fetchAllIncomes(this.loggedInUserId);
       this.fetchAllExpenses(this.loggedInUserId);
+      this.fetchBudgetData(this.loggedInUserId);
     }
   }
 
@@ -317,10 +322,81 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         this.expensesChart.data = this.expensesChartData;
         this.expensesChart.update();
       }
+      this.currentMonthExpenses = currentMonthTotal; 
+      this.updateSavingsChart();
     }, error => {
       console.error('Error fetching expenses:', error);
     });
   }
+
+  fetchBudgetData(userId: number): void {
+    this.transactionsService.getBudget(userId).subscribe((budgets: Budget[]) => {
+        const now = new Date();
+        const nowMonth = now.getMonth() + 1; // Convert zero-based month to 1-based (Jan = 1, Feb = 2, etc.)
+        const nowYear = now.getFullYear();
+
+        let currentBudget = null;
+
+        for (const budget of budgets) {
+            try {
+                // Extract year, month, and day directly from the "YYYY-MM-DD" string
+                const [startYear, startMonth, startDay] = budget.start_date.split('-').map(Number);
+                const [endYear, endMonth, endDay] = budget.end_date.split('-').map(Number);
+                // Check if the current date is within the budget period
+                const isWithinBudgetPeriod =
+                    (startYear < nowYear || (startYear === nowYear && startMonth <= nowMonth)) &&
+                    (endYear > nowYear || (endYear === nowYear && endMonth >= nowMonth));
+
+                if (isWithinBudgetPeriod) {
+                    currentBudget = budget;
+                    break;
+                }
+            } catch (e) {
+                console.error('Error parsing budget dates:', e);
+            }
+        }
+
+        this.currentMonthBudget = currentBudget ? currentBudget.budget_amount : 0;
+
+        this.updateSavingsChart();
+    }, error => {
+        console.error('Error fetching budgets:', error);
+        this.currentMonthBudget = 0;
+    });
+}
+
+updateSavingsChart(): void {
+  const usedAmount = this.currentMonthExpenses;
+  const budgetAmount = this.currentMonthBudget;
+  let labels: string[];
+  let data: number[];
+  let backgroundColors: string[];
+
+  if (budgetAmount === 0) {
+    // No budget set
+    labels = ['Expenses'];
+    data = [usedAmount];
+    backgroundColors = ['#FF6B6B']; // Bright Red
+  } else if (usedAmount <= budgetAmount) {
+    labels = ['Used', 'Remaining'];
+    data = [usedAmount, budgetAmount - usedAmount];
+    backgroundColors = ['#FF6B6B', '#FFD166']; // Red & Warm Yellow
+  } else {
+    labels = ['Budget', 'Overspent'];
+    data = [budgetAmount, usedAmount - budgetAmount];
+    backgroundColors = ['#06D6A0', '#EF476F']; // Green & Pink-Red
+  }
+
+  this.savingsChartData.labels = labels;
+  this.savingsChartData.datasets[0].data = data;
+  this.savingsChartData.datasets[0].backgroundColor = backgroundColors;
+
+  if (this.savingsChart) {
+    this.savingsChart.data = this.savingsChartData;
+    this.savingsChart.update();
+  }
+}
+
 
   fetchWeeklyExpenses(userId: number | null): void {
     this.transactionsService.getExpenses(userId).subscribe((expenses: any[]) => {
@@ -406,21 +482,23 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   closeExpenseModal() {
     this.showExpenseModal = false;
-    this.fetchWeeklyExpenses(this.loggedInUserId);
     if (this.loggedInUserId) {
       this.fetchExpenseData(this.loggedInUserId);
+      this.fetchWeeklyExpenses(this.loggedInUserId);
+      this.fetchUpcomingPayments(this.loggedInUserId);
+      this.fetchBudgetData(this.loggedInUserId);
     }
   }
 
   onExpenseSaved(expenseData: any) {
     this.expenseInstance.saveExpense();
-    console.log('New expense:', expenseData);
     if (this.loggedInUserId) {
       this.fetchExpenseData(this.loggedInUserId);
       this.fetchWeeklyExpenses(this.loggedInUserId);
       this.fetchUpcomingPayments(this.loggedInUserId);
       this.fetchAllIncomes(this.loggedInUserId);
       this.fetchAllExpenses(this.loggedInUserId);
+      this.fetchBudgetData(this.loggedInUserId);
     }
   }
 
@@ -450,24 +528,32 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   
   onIncomeSaved(incomeData: any) {
     this.incomeInstance.saveIncome();
-    console.log('New income:', incomeData);
     if (this.loggedInUserId) {
       this.fetchIncomeData(this.loggedInUserId);
       this.fetchAllIncomes(this.loggedInUserId);
       this.fetchAllExpenses(this.loggedInUserId);
+      this.fetchBudgetData(this.loggedInUserId);
+      this.updateSavingsChart();
     }
   }
 
   closeBudgetModal() {
     this.showBudgetModal = false;
+    if (this.loggedInUserId) {
+      this.fetchExpenseData(this.loggedInUserId);
+      this.fetchBudgetData(this.loggedInUserId);
+      this.updateSavingsChart();
+    }
   }
   
   onBudgetSaved(budgetData: any) {
     this.budgetInstance.saveBudget();
-    console.log('New budget:', budgetData);
-    if (this.loggedInUserId){
-      this.fetchAllIncomes(this.loggedInUserId);
+    if (this.loggedInUserId) {
+      this.fetchExpenseData(this.loggedInUserId);
+      this.fetchBudgetData(this.loggedInUserId);
+      this.updateSavingsChart();
       this.fetchAllExpenses(this.loggedInUserId);
+      this.fetchAllIncomes(this.loggedInUserId);
     }
   }
 

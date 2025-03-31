@@ -31,18 +31,18 @@ type Expense struct {
 	Description string  `json:"description"`
 	Date        string  `json:"date"`
 	CreatedAt   string  `json:"created_at"`
-	Paid		bool  	`json: "Paid"`
+	Paid        bool    `json: "Paid"`
 }
 
-// Budget struct
 type Budget struct {
-	ID            uint    `json:"id" gorm:"primaryKey"`
-	UserID        uint    `json:"user_id"`
-	BudgetName    string  `json:"budget_name"`
-	MonthlyIncome float64 `json:"monthly_income"`
-	StartDate     string  `json:"start_date"`
-	EndDate       string  `json:"end_date"`
-	Details       string  `json:"details"`
+	ID           uint    `json:"id" gorm:"primaryKey"`
+	UserID       uint    `json:"user_id"`
+	BudgetName   string  `json:"budget_name"`
+	BudgetAmount float64 `json:"budget_amount"`
+	StartDate    string  `json:"start_date"`
+	EndDate      string  `json:"end_date"`
+	Notes        string  `json:"notes"`
+	CreatedAt    string  `json:"created_at"`
 }
 
 type Income struct {
@@ -54,7 +54,6 @@ type Income struct {
 	Date        string  `json:"date"`
 	CreatedAt   string  `json:"created_at"`
 }
-
 
 func initDB() {
 	var err error
@@ -210,7 +209,12 @@ func SetBudget(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	db.Create(&budget)
+
+	if err := db.Create(&budget).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save budget"})
+		return
+	}
+
 	c.JSON(http.StatusOK, budget)
 }
 
