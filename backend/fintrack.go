@@ -57,7 +57,7 @@ type Income struct {
 
 func initDB() {
 	var err error
-	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
+	dsn := "host=localhost user=postgres password=Pavan@257 dbname=fintrack port=5432 sslmode=disable"
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database")

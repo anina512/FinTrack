@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing'; // Fixed typo
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TransactionsService } from './transactions.service';
 
@@ -118,6 +118,22 @@ describe('TransactionsService', () => {
       expect(req.request.method).toBe('DELETE');
 
       req.flush(null);
+    });
+  });
+
+  describe('updateExpense', () => {
+    it('should send a PUT request to update expense', () => {
+      const mockExpense = { id: 1, amount: 500, description: 'Groceries', Paid: true };
+
+      service.updateExpense(mockExpense).subscribe(response => {
+        expect(response).toEqual(mockExpense);
+      });
+
+      const req = httpMock.expectOne(`${baseUrl}/expenses/${mockExpense.id}/paid`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(mockExpense);
+
+      req.flush(mockExpense);
     });
   });
 

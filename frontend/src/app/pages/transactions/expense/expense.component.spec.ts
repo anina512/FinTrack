@@ -16,18 +16,20 @@ describe('ExpenseComponent', () => {
         id: '1',
         user_id: 1,
         amount: 100,
-        category: 'food',
-        date: '2023-01-01',
+        category: 'Food',
+        date: '2025-03-30',
         description: 'Lunch',
+        Paid: false,
         created_at: new Date().toISOString()
       },
       {
         id: '2',
         user_id: 1,
         amount: 50,
-        category: 'transportation',
-        date: '2023-01-02',
+        category: 'Transportation',
+        date: '2025-04-01',
         description: 'Taxi',
+        Paid: true,
         created_at: new Date().toISOString()
       }
     ];
@@ -52,7 +54,6 @@ describe('ExpenseComponent', () => {
     jest.clearAllMocks();
   });
 
-  // Existing tests
   it('should emit closeModal when close() is called', () => {
     component.close();
     expect(closeModalEmitSpy).toHaveBeenCalledTimes(1);
@@ -64,7 +65,8 @@ describe('ExpenseComponent', () => {
       amount: '',
       category: '',
       date: '',
-      description: ''
+      description: '',
+      Paid: false
     };
 
     component.saveExpense();
@@ -72,18 +74,19 @@ describe('ExpenseComponent', () => {
   });
 
   it('should call addExpense and emit expenseSaved then close when saving valid expense', () => {
-    const testDate = '2023-01-01';
+    const testDate = '2025-03-31';
     const testDescription = 'Test expense description';
     component.loggedInUserId = 1;
     component.expense = {
       amount: '300',
-      category: 'food',
+      category: 'Food',
       date: testDate,
-      description: testDescription
+      description: testDescription,
+      Paid: false
     };
 
     const expectedFormattedDate = new Date(testDate).toISOString().split('T')[0];
-    const mockResponse = { id: 456, ...component.expense };
+    const mockResponse = { id: '456', ...component.expense };
     mockTransactionsService.addExpense.mockReturnValue(of(mockResponse));
 
     component.saveExpense();
@@ -93,9 +96,10 @@ describe('ExpenseComponent', () => {
     
     expect(newExpenseArg.user_id).toBe(1);
     expect(newExpenseArg.amount).toBe(300);
-    expect(newExpenseArg.category).toBe('food');
+    expect(newExpenseArg.category).toBe('Food');
     expect(newExpenseArg.date).toBe(expectedFormattedDate);
     expect(newExpenseArg.description).toBe(testDescription);
+    expect(newExpenseArg.Paid).toBe(false);
     expect(newExpenseArg.created_at).toBeDefined();
 
     expect(expenseSavedEmitSpy).toHaveBeenCalledWith(mockResponse);
@@ -105,9 +109,10 @@ describe('ExpenseComponent', () => {
   it('should log an error and not emit events when addExpense fails', () => {
     component.expense = {
       amount: '200',
-      category: 'trip',
-      date: '2023-02-01',
-      description: 'Error scenario'
+      category: 'Transportation',
+      date: '2025-03-31',
+      description: 'Error scenario',
+      Paid: false
     };
 
     const errorResponse = new Error('API failure');
@@ -122,11 +127,10 @@ describe('ExpenseComponent', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  // New tests for untested methods
   describe('loadExpenses()', () => {
     it('should fetch expenses and populate expensesList', () => {
       component.loadExpenses();
-      expect(mockTransactionsService.getExpenses).toHaveBeenCalled();
+      expect(mockTransactionsService.getExpenses).toHaveBeenCalledWith(1);
       expect(component.expensesList).toEqual(mockExpenses);
     });
 
@@ -144,7 +148,7 @@ describe('ExpenseComponent', () => {
 
   describe('deleteExpense()', () => {
     it('should delete expense and update expensesList', () => {
-      component.expensesList = mockExpenses;
+      component.expensesList = [...mockExpenses];
       const initialLength = component.expensesList.length;
 
       component.deleteExpense('1');
@@ -166,18 +170,66 @@ describe('ExpenseComponent', () => {
     });
   });
 
-  // Test for ngOnInit
-  it('should call loadExpenses on initialization', () => {
-    const loadSpy = jest.spyOn(component, 'loadExpenses');
-    component.ngOnInit();
-    expect(loadSpy).toHaveBeenCalledTimes(1);
+  describe('ngOnInit()', () => {
+    it('should set loggedInUserId and call loadExpenses on initialization', () => {
+      const loadSpy = jest.spyOn(component, 'loadExpenses');
+      component.ngOnInit();
+      expect(mockAuthService.getUserId).toHaveBeenCalled();
+      expect(component.loggedInUserId).toBe(1);
+      expect(loadSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
-  // Test for categories initialization
-  it('should initialize with correct categories', () => {
-    expect(component.categories).toEqual([
-      'bills', 'education', 'food', 'trip', 
-      'transportation', 'gym', 'others'
-    ]);
+  describe('getExpenseStatus()', () => {
+    it('should return "Paid" if expense is marked as paid', () => {
+      const expense: Expense = { ...mockExpenses[1], Paid: true };
+      const status = component.getExpenseStatus(expense);
+      expect(status).toBe('Paid');
+    });
+
+    it('should return "Due" if expense date is today or future and not paid', () => {
+      const today = new Date('2025-03-31');
+      jest.useFakeTimers().setSystemTime(today);
+      const expense: Expense = { ...mockExpenses[0], date: '2025-04-01', Paid: false };
+      const status = component.getExpenseStatus(expense);
+      expect(status).toBe('Due');
+      jest.useRealTimers();
+    });
+
+    it('should return "Overdue" if expense date is past and not paid', () => {
+      const today = new Date('2025-03-31');
+      jest.useFakeTimers().setSystemTime(today);
+      const expense: Expense = { ...mockExpenses[0], date: '2025-03-30', Paid: false };
+      const status = component.getExpenseStatus(expense);
+      expect(status).toBe('Overdue');
+      jest.useRealTimers();
+    });
+  });
+
+  describe('Properties', () => {
+    it('should initialize with correct categories', () => {
+      expect(component.categories).toEqual([
+        'Housing', 'Utilities', 'Food', 'Transportation',
+        'Healthcare', 'Insurance', 'Bills', 'Education',
+        'Entertainment', 'Fitness', 'Personal Care', 'Miscellaneous'
+      ]);
+    });
+
+    it('should initialize expense object with default values', () => {
+      expect(component.expense).toEqual({
+        amount: '',
+        category: '',
+        date: '',
+        description: '',
+        Paid: false
+      });
+    });
+
+    it('should reflect input mode', () => {
+      component.mode = 'view';
+      expect(component.mode).toBe('view');
+      component.mode = 'add';
+      expect(component.mode).toBe('add');
+    });
   });
 });
