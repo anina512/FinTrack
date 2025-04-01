@@ -14,8 +14,8 @@
                 <canvas id="incomeChart"></canvas>
               </div>
               <div class="card-footer">
-                <p>${{ income.toLocaleString() }}</p>
-                <small>+2.5% compared to last year</small>
+                <p>Total Income: ${{ income.toLocaleString() }}</p>
+                <small>{{ incomeComparisonText }}</small>
               </div>
               <div class="button-container row-buttons">
                 <button class="btn add-income" (click)="openIncomeModal()">
@@ -34,8 +34,8 @@
                 <canvas id="expensesChart"></canvas>
               </div>
               <div class="card-footer">
-                <p>${{ expenses.toLocaleString() }}</p>
-                <small>-1.8% compared to last year</small>
+                <p>Total Expense: ${{ expenses.toLocaleString() }}</p>
+                <small>{{expenseComparisonText}}</small>
               </div>
               <div class="button-container row-buttons">
                 <button class="btn add-expense" (click)="openExpenseModal()">
@@ -49,13 +49,13 @@
   
             <!-- Savings Card -->
             <div class="card savings-card">
-              <h2><i class="fas fa-piggy-bank"></i> Savings</h2>
+              <h2><i class="fas fa-piggy-bank"></i> Budget</h2>
               <div class="chart-container doughnut-chart">
                 <canvas id="savingsChart"></canvas>
               </div>
               <div class="card-footer">
-                <p>${{ savings.toLocaleString() }}</p>
-                <small>+3.5% compared to last year</small>
+                <p><strong>Used:</strong> {{ currentMonthExpenses | currency }}</p>
+                <p><strong>Remaining:</strong> {{ (currentMonthBudget - currentMonthExpenses) | currency }}</p>
               </div>
               <div class="button-container row-buttons">
                 <button class="btn add-budget" (click)="openBudgetModal()">
@@ -84,21 +84,55 @@
           <div class="card upcoming-payments">
             <h2><i class="fas fa-calendar-alt"></i> Upcoming Payments</h2>
             <ul>
-              <li>Home Rental - February 15, 2025</li>
-              <li>Water Installment - February 20, 2025</li>
-              <li>Phone Bill - February 25, 2025</li>
+              <li *ngFor="let payment of upcomingPayments">
+                <strong>{{ payment.name }}</strong>${{ payment.amount }}  
+                <br />
+                <span>{{ payment.description }}</span>  
+                <br />
+                <small>Due: {{ payment.date | date:'MM/dd/yyyy' }}</small>
+                <button class="paid-button" (click)="markAsPaid(payment)">
+                  <i class="fas fa-check"></i>  
+              </button>
+              </li>
             </ul>
           </div>
+
           <div class="card recent-activities">
             <h2><i class="fas fa-clock"></i> Recent Activities</h2>
-            <ul>
-              <li>Electric Bill - Success</li>
-              <li>Water Installment - Success</li>
-              <li>Phone Bill - Success</li>
-              <li>Internet Bill - Success</li>
-              <li>Home Rental - Pending</li>
+            <ul class="activity-list">
+              <li *ngFor="let activity of combinedActivities | slice:0:5" 
+                  [style.border-left]="'4px solid ' + getActivityColor(activity.type)"
+                  class="activity-item">
+                <div class="activity-header">
+                  <span class="activity-date">
+                    {{ activity.date | date:'MMM d' }}
+                  </span>
+                  <span class="activity-type" [ngStyle]="{color: getActivityColor(activity.type)}">
+                    {{ activity.type | uppercase }}
+                  </span>
+                </div>
+                <div class="activity-details">
+                  <ng-container [ngSwitch]="activity.type">
+                    <span *ngSwitchCase="'income'">
+                      {{ activity.category }}: +{{ activity.amount | currency }}
+                    </span>
+                    <span *ngSwitchCase="'expense'">
+                      {{ activity.category }}: -{{ activity.amount | currency }}
+                    </span>
+                    <span *ngSwitchCase="'budget'">
+                      Budget: {{ activity.budget_amount | currency }} 
+                      ({{ activity.start_date | date:'shortDate' }} - {{ activity.end_date | date:'shortDate' }})
+                    </span>
+                  </ng-container>
+                </div>
+              </li>
             </ul>
+            <button (click)="openActivitiesModal()" class="view-all-activities-btn">
+              <i class="fas fa-list-ul"></i>
+              View All Transactions
+            </button>
           </div>
+          
         </div>
         <app-expense 
         *ngIf="showExpenseModal"
@@ -118,6 +152,11 @@
           (closeModal)="closeBudgetModal()"
           (budgetSaved)="onBudgetSaved($event)">
         </app-budget>
+        <app-activities-modal 
+          *ngIf="showActivitiesModal"
+          [combinedActivities]="combinedActivities"
+          (closeModal)="closeActivitiesModal()">
+        </app-activities-modal>
       </div>
     </div>
   </div>

@@ -34,7 +34,7 @@ export class IncomeComponent {
     description: ''
   };
 
-  categories = ['Food', 'Transport', 'Housing', 'Entertainment', 'Utilities'];
+  categories = ['Salary', 'Freelance', 'Business', 'Investments', 'Rent', 'Benefits', 'Gifts', 'Other'];
 
   loggedInUserId: number | null = null;
 

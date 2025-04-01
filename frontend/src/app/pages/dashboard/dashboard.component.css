@@ -49,6 +49,32 @@
   gap: 15px;
 }
 
+.paid-button {
+  width: 24px; 
+  height: 24px; 
+  border-radius: 50%; 
+  background-color: #4CAF50;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  color: white;
+  font-size: 14px;
+}
+
+.paid-button:hover {
+  background-color: #45a049; 
+  transform: scale(1.1); 
+}
+
+.paid-button:active {
+  background-color: #3e8e41; 
+  transform: scale(1);
+}
+
+
 /* Card Universal Styles */
 .card {
   background: white;
@@ -196,6 +222,82 @@
   list-style: none;
 }
 
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activity-item {
+  padding: 12px;
+  margin: 8px 1px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 0.9em;
+}
+
+.activity-date {
+  color: #666;
+}
+
+.activity-type {
+  font-weight: 500;
+  font-size: 0.8em;
+}
+
+.activity-details {
+  font-size: 0.95em;
+}
+
+.view-all-activities-btn {
+  width: 100%;
+  padding: 12px 30px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.view-all-activities-btn:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.view-all-activities-btn:active {
+  transform: translateY(0);
+}
+
+.view-all-activities-btn i {
+  font-size: 0.9em;
+}
+
+.recent-activities h2 {
+  margin: 0 0 1rem 0;
+  color: #2c3e50;
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* Accent Borders */
 .income-card { border-left: 4px solid #2ecc71; }
 .expenses-card { border-left: 4px solid #e74c3c; }
@@ -251,6 +353,7 @@
   .doughnut-chart {
     width: 70%;
   }
+
 }
 
 @media (max-width: 480px) {

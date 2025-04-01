@@ -27,21 +27,22 @@ type Expense struct {
 	ID          uint    `json:"id" gorm:"primaryKey"`
 	UserID      uint    `json:"user_id"`
 	Amount      float64 `json:"amount"`
-	Category    string  `json:"category" gorm:"check:category IN ('bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others')"`
+	Category    string  `json:"category"`
 	Description string  `json:"description"`
 	Date        string  `json:"date"`
 	CreatedAt   string  `json:"created_at"`
+	Paid        bool    `json: "Paid"`
 }
 
-// Budget struct
 type Budget struct {
-	ID            uint    `json:"id" gorm:"primaryKey"`
-	UserID        uint    `json:"user_id"`
-	BudgetName    string  `json:"budget_name"`
-	MonthlyIncome float64 `json:"monthly_income"`
-	StartDate     string  `json:"start_date"`
-	EndDate       string  `json:"end_date"`
-	Details       string  `json:"details"`
+	ID           uint    `json:"id" gorm:"primaryKey"`
+	UserID       uint    `json:"user_id"`
+	BudgetName   string  `json:"budget_name"`
+	BudgetAmount float64 `json:"budget_amount"`
+	StartDate    string  `json:"start_date"`
+	EndDate      string  `json:"end_date"`
+	Notes        string  `json:"notes"`
+	CreatedAt    string  `json:"created_at"`
 }
 
 type Income struct {
@@ -53,7 +54,6 @@ type Income struct {
 	Date        string  `json:"date"`
 	CreatedAt   string  `json:"created_at"`
 }
-
 
 func initDB() {
 	var err error
@@ -89,6 +89,8 @@ func main() {
 	router.POST("/incomes", AddIncome)
 	router.GET("/incomes", GetIncomes)
 	router.DELETE("/incomes/:id", DeleteIncome)
+	router.PUT("/expenses/:id/paid", UpdateExpenseStatus)
+	router.GET("/users", GetUser)
 
 	router.Run(":8080")
 }
@@ -100,20 +102,20 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-	// Check if username already exists
 	var existingUser User
+	// Check if the username already exists
 	if err := db.Where("username = ?", user.Username).First(&existingUser).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
 		return
 	}
 
-	// Check if email already exists
+	// Check if the email already exists
 	if err := db.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
+		c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
 		return
 	}
 
-	// Hash password
+	// Hash password before saving
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
@@ -121,9 +123,9 @@ func RegisterUser(c *gin.Context) {
 	}
 	user.Password = string(hashedPassword)
 
-	// Save user in DB
+	// Save user to DB
 	if err := db.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
 
@@ -159,13 +161,26 @@ func LoginUser(c *gin.Context) {
 	})
 }
 
+func GetUser(c *gin.Context) {
+	userID := c.Param("id")
+
+	var user User
+	if err := db.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Don't return the password
+	user.Password = ""
+	c.JSON(http.StatusOK, user)
+}
+
 func AddExpense(c *gin.Context) {
 	var expense Expense
 	if err := c.ShouldBindJSON(&expense); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	expense.CreatedAt = time.Now().Format("2006-01-02")
 	db.Create(&expense)
 	c.JSON(http.StatusOK, expense)
 }
@@ -208,7 +223,12 @@ func SetBudget(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	db.Create(&budget)
+
+	if err := db.Create(&budget).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save budget"})
+		return
+	}
+
 	c.JSON(http.StatusOK, budget)
 }
 
@@ -241,7 +261,6 @@ func AddIncome(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	income.CreatedAt = time.Now().Format("2006-01-02") // Set current date
 	if err := db.Create(&income).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save income"})
 		return
@@ -288,4 +307,30 @@ func DeleteBudget(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Budget deleted"})
+}
+
+func UpdateExpenseStatus(c *gin.Context) {
+	expenseID := c.Param("id")
+
+	var expense Expense
+	if err := db.First(&expense, expenseID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Expense not found"})
+		return
+	}
+
+	var updateData struct {
+		Paid bool `json:"paid"`
+	}
+	if err := c.ShouldBindJSON(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	expense.Paid = updateData.Paid
+	if err := db.Save(&expense).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update expense"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Expense status updated", "expense": expense})
 }

@@ -167,3 +167,19 @@
     max-height: 65vh;
     overflow-y: auto;
   }
+
+  span.Paid {
+    color: green;
+    font-weight: bold;
+  }
+  
+  span.Due {
+    color: orange;
+    font-weight: bold;
+  }
+  
+  span.Overdue {
+    color: red;
+    font-weight: bold;
+  }
+  

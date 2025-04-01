@@ -31,6 +31,13 @@
         <textarea [(ngModel)]="expense.description" name="description" placeholder="Add note..."></textarea>
       </div>
 
+      <div class="form-group">
+        <label>
+          <input type="checkbox" [(ngModel)]="expense.Paid" name="Paid">
+          Mark as Paid
+        </label>
+      </div>      
+
       <div class="button-group">
         <button type="button" class="btn cancel" (click)="close()">Cancel</button>
         <button type="submit" class="btn save">Save Expense</button>
@@ -47,6 +54,7 @@
           <th>Category</th>
           <th>Date</th>
           <th>Description</th>
+          <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -56,6 +64,11 @@
           <td>{{ exp.category }}</td>
           <td>{{ exp.date | date:'MMM d, yyyy' }}</td>
           <td>{{ exp.description}}</td>
+          <td>
+            <span [ngClass]="getExpenseStatus(exp)">
+              {{ getExpenseStatus(exp) }}
+            </span>
+          </td>
           <td>
             <button class="delete-btn" (click)="deleteExpense(exp.id ? exp.id : '')">
               <i class="fas fa-trash"></i>

@@ -30,12 +30,26 @@ export class ExpenseComponent {
     amount: '',
     category: '',
     date: '',
-    description: ''
+    description: '',
+    Paid: false
   };
 
-  categories = ['bills', 'education', 'food', 'trip', 'transportation', 'gym', 'others'];
-
-  loggedInUserId: number | null = null;
+  categories = [
+    'Housing',       
+    'Utilities',      
+    'Food',
+    'Transportation',
+    'Healthcare',
+    'Insurance',
+    'Bills',         
+    'Education',
+    'Entertainment',
+    'Fitness',
+    'Personal Care',
+    'Miscellaneous'   
+  ];
+  
+  loggedInUserId: number | null = 1;
 
   constructor(
     private transactionsService: TransactionsService,
@@ -70,12 +84,13 @@ export class ExpenseComponent {
         category: this.expense.category,
         date: new Date(this.expense.date).toISOString().split('T')[0],
         description: this.expense.description,
+        Paid: this.expense.Paid, 
         created_at: new Date().toISOString()
       };
-      
+  
       this.transactionsService.addExpense(newExpense).subscribe(
         (response: any) => {
-          this.expenseSaved.emit(response); 
+          this.expenseSaved.emit(response);
           this.close();
         },
         (error) => {
@@ -84,6 +99,21 @@ export class ExpenseComponent {
       );
     }
   }
+
+  getExpenseStatus(expense: Expense): string {
+    const today = new Date();
+    const expenseDate = new Date(expense.date);
+  
+    if (expense.Paid) {
+      return 'Paid';
+    } else if (expenseDate >= today) {
+      return 'Due';
+    } else {
+      return 'Overdue';
+    }
+  }
+  
+  
 
   deleteExpense(expenseId: string) {
     this.transactionsService.deleteExpense(expenseId).subscribe(
