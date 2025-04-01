@@ -135,6 +135,51 @@ The chart fetches expense data for the last seven days and displays it as a bar 
 **Testing:**
 This feature was tested using Jest and Cypress to ensure that the correct data is displayed.
 
+### Upcoming Payments Section Displaying Payment, Amount, Due Date, and Button to Mark as Paid
+
+**Description:**
+The upcoming payments section displays all future payments, including their due dates and amounts. Users can also mark these payments as "Paid."
+
+**Process:**
+Upcoming payments are fetched from the database and displayed with a "Mark as Paid" button. Clicking the button updates the payment status.
+
+**Testing:**
+Tested using Cypress and Jest. Ensured that payments can be marked as paid and displayed correctly.
+
+### Recent Activities Section Displaying 5 Recent Activities
+
+**Description:**
+A recent activities section has been added to the dashboard, displaying the last five activities performed by the user.
+
+**Process:**
+The user's recent actions, such as adding or deleting income/expense records, are tracked and displayed.
+
+**Testing:**
+Verified with Cypress to ensure correct activities are displayed.
+
+### Button to View Transaction History
+
+**Description:**
+A button has been added that opens a modal window displaying the user's entire transaction history.
+
+**Process:**
+Clicking the "View Transaction History" button opens a modal window. The modal fetches and displays all past transactions from the backend.
+
+**Testing:**
+Verified button functionality and transaction history display using Cypress.
+
+### Everything Made Specific to the User with Logged-in User Saved in Session
+
+**Description:**
+All data and features are now tied to the currently logged-in user, with session management ensuring that data is displayed only for the authenticated user.
+
+**Process:**
+Backend verifies user sessions. Data is personalized based on the logged-in user.
+
+**Testing:**
+Ensured correct behavior for different users based on their session.
+
+
 ## Testing and Quality Assurance
 - **Unit Tests:** Jest was used for frontend components and backend logic testing.
 - **Cypress Component Tests:** Cypress was used to validate user flows and UI interactions.
@@ -405,6 +450,37 @@ type Income struct {
 go run main.go
 ```
 The API runs on port `8080`. Make sure PostgreSQL is set up and running before starting the server.
+
+# Backend Test Documentation
+
+Below outlines the test cases implemented for the backend of the finance tracker application. The tests ensure that the API functions correctly and handles various scenarios such as user authentication, expense management, income tracking, and budget handling.
+
+## Test Cases
+
+### User Authentication Tests
+- `TestRegisterUser`
+- `TestLoginUser`
+- `TestInvalidLogin`
+
+### Expense Management Tests
+- `TestAddExpense`
+- `TestGetExpenses`
+- `TestDeleteExpense`
+- `TestUpdateExpenseStatus`
+
+### Income Management Tests
+- `TestAddIncome`
+- `TestGetIncomes`
+- `TestDeleteIncome`
+
+### Budget Management Tests
+- `TestSetBudget`
+- `TestGetBudgetDetails`
+- `TestDeleteBudget`
+
+### User Retrieval Tests
+- `TestGetUser`
+- `TestGetNonExistentUser`
 
 ## Summary of Changes
 Sprint 3 introduced key user-centric features to improve financial tracking, visualization, and user experience. The integration of charts, dynamic user-specific data, and budget management capabilities has enhanced the application's usability. With thorough testing via Jest, Cypress, and Postman, these features were seamlessly integrated, ensuring reliability and user satisfaction.
