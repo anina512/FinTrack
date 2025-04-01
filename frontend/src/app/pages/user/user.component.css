@@ -1,0 +1,122 @@
+.user-page-container {
+    max-width: 600px;
+    width: 90%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    animation: fadeInUp 0.6s ease-out forwards;
+    z-index: 10;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -40%);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+  }
+  
+  .user-info {
+    margin-bottom: 36px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .label {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+  
+  .value {
+    font-size: 1.3em;
+    color: #4a5568;
+    margin-bottom: 28px;
+    font-weight: 400;
+    line-height: 1.5;
+    padding-left: 8px;
+    border-left: 3px solid #4CAF50;
+  }
+  
+  .user-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 40px;
+  }
+  
+  button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 28px;
+    font-size: 1em;
+    margin: 0;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    min-width: 140px;
+  }
+  
+  button:hover {
+    background-color: #3d8b40;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  button:active {
+    transform: translateY(1px);
+  }
+  
+  .logout-btn {
+    background-color: #f44336;
+    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2);
+  }
+  
+  .logout-btn:hover {
+    background-color: #d32f2f;
+    box-shadow: 0 6px 12px rgba(244, 67, 54, 0.25);
+  }
+  
+  @media (max-width: 640px) {
+    .user-page-container {
+      width: 85%;
+      padding: 24px;
+      border-radius: 12px;
+    }
+    
+    .user-actions {
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+    }
+    
+    .label {
+      font-size: 1em;
+    }
+    
+    .value {
+      font-size: 1.1em;
+      margin-bottom: 20px;
+    }
+  }

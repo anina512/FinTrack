@@ -57,7 +57,7 @@ type Income struct {
 
 func initDB() {
 	var err error
-	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
+	dsn := "host=localhost user=admin password=password dbname=fintrack port=5432 sslmode=disable"
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database")
@@ -90,6 +90,7 @@ func main() {
 	router.GET("/incomes", GetIncomes)
 	router.DELETE("/incomes/:id", DeleteIncome)
 	router.PUT("/expenses/:id/paid", UpdateExpenseStatus)
+	router.GET("/users/:id", GetUser)
 
 	router.Run(":8080")
 }
@@ -158,6 +159,20 @@ func LoginUser(c *gin.Context) {
 		"message": "Login successful",
 		"userId":  user.ID, // Assuming user.ID is the user ID from the database
 	})
+}
+
+func GetUser(c *gin.Context) {
+	userID := c.Param("id")
+
+	var user User
+	if err := db.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Don't return the password
+	user.Password = ""
+	c.JSON(http.StatusOK, user)
 }
 
 func AddExpense(c *gin.Context) {

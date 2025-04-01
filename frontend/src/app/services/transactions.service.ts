@@ -53,5 +53,7 @@ export class TransactionsService {
   updateExpense(expense: any) {
     return this.http.put(`${this.baseUrl}/expenses/${expense.id}/paid`, expense);
   }
-  
+  getUser(userId: number | null): Observable<any> {
+    return this.http.get(`${this.baseUrl}/users/${userId}`);
+  }
 }

@@ -1,0 +1,22 @@
+<app-side-nav></app-side-nav>
+<div class="user-container">
+    <!-- Loading state -->
+    <div *ngIf="!user.id" class="loading">Loading user data...</div>
+    
+    <!-- User Info Section -->
+    <div *ngIf="user.id" class="user-info">
+        <h2 class="label">Username:</h2>
+        <p class="value">{{ user.username }}</p>
+
+        <h2 class="label">Full Name:</h2>
+        <p class="value">{{ user.fullName }}</p>
+
+        <h2 class="label">Email ID:</h2>
+        <p class="value">{{ user.email }}</p>
+    </div>
+    
+    <div class="user-actions">
+        <button (click)="editProfile()">Edit Profile</button>
+        <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+</div>
