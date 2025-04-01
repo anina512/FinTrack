@@ -102,20 +102,20 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-	// Check if username already exists
 	var existingUser User
+	// Check if the username already exists
 	if err := db.Where("username = ?", user.Username).First(&existingUser).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
 		return
 	}
 
-	// Check if email already exists
+	// Check if the email already exists
 	if err := db.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
+		c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
 		return
 	}
 
-	// Hash password
+	// Hash password before saving
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
@@ -123,9 +123,9 @@ func RegisterUser(c *gin.Context) {
 	}
 	user.Password = string(hashedPassword)
 
-	// Save user in DB
+	// Save user to DB
 	if err := db.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
 
