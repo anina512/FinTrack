@@ -98,31 +98,40 @@
           </div>
 
           <div class="card recent-activities">
-            <h3>Recent Activities</h3>
-            
-            <!-- Recent Income -->
-            <div class="recent-income">
-              <h4>Income Added</h4>
-              <ul>
-                <li *ngFor="let income of allIncomes | slice:0:3">
-                  {{ income.date | date:'shortDate' }} - {{ income.category }}: ${{ income.amount }}
-                </li>
-              </ul>
-            </div>
-          
-            <!-- Recent Expenses -->
-            <div class="recent-expenses">
-              <h4>Expenses Added</h4>
-              <ul>
-                <li *ngFor="let expense of allExpenses | slice:0:3">
-                  {{ expense.date | date:'shortDate' }} - {{ expense.category }}: ${{ expense.amount }}
-                </li>
-              </ul>
-            </div>
-            <br>
-            <!-- View All Button -->
-          <button (click)="openActivitiesModal()" class="btn btn-primary">View All Activities</button>       
-          </div>  
+            <h2><i class="fas fa-clock"></i> Recent Activities</h2>
+            <ul class="activity-list">
+              <li *ngFor="let activity of combinedActivities | slice:0:5" 
+                  [style.border-left]="'4px solid ' + getActivityColor(activity.type)"
+                  class="activity-item">
+                <div class="activity-header">
+                  <span class="activity-date">
+                    {{ activity.date | date:'MMM d' }}
+                  </span>
+                  <span class="activity-type" [ngStyle]="{color: getActivityColor(activity.type)}">
+                    {{ activity.type | uppercase }}
+                  </span>
+                </div>
+                <div class="activity-details">
+                  <ng-container [ngSwitch]="activity.type">
+                    <span *ngSwitchCase="'income'">
+                      {{ activity.category }}: +{{ activity.amount | currency }}
+                    </span>
+                    <span *ngSwitchCase="'expense'">
+                      {{ activity.category }}: -{{ activity.amount | currency }}
+                    </span>
+                    <span *ngSwitchCase="'budget'">
+                      Budget: {{ activity.budget_amount | currency }} 
+                      ({{ activity.start_date | date:'shortDate' }} - {{ activity.end_date | date:'shortDate' }})
+                    </span>
+                  </ng-container>
+                </div>
+              </li>
+            </ul>
+            <button (click)="openActivitiesModal()" class="view-all-activities-btn">
+              <i class="fas fa-list-ul"></i>
+              View All Transactions
+            </button>
+          </div>
           
         </div>
         <app-expense 
@@ -145,8 +154,7 @@
         </app-budget>
         <app-activities-modal 
           *ngIf="showActivitiesModal"
-          [allIncomes]="allIncomes"
-          [allExpenses]="allExpenses"
+          [combinedActivities]="combinedActivities"
           (closeModal)="closeActivitiesModal()">
         </app-activities-modal>
       </div>

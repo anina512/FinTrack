@@ -166,7 +166,6 @@ func AddExpense(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	expense.CreatedAt = time.Now().Format("2006-01-02")
 	db.Create(&expense)
 	c.JSON(http.StatusOK, expense)
 }
@@ -247,7 +246,6 @@ func AddIncome(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	income.CreatedAt = time.Now().Format("2006-01-02") // Set current date
 	if err := db.Create(&income).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save income"})
 		return

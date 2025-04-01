@@ -103,6 +103,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   allIncomes: any[] = [];
   allExpenses: any[] = [];
+  combinedActivities: any[] = [];
+  allBudgets: any[] = [];
 
   incomeCategories = ['Salary', 'Freelance', 'Business', 'Investments', 'Rent', 'Benefits', 'Gifts', 'Other'];
 
@@ -144,6 +146,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       this.fetchAllIncomes(this.loggedInUserId);
       this.fetchAllExpenses(this.loggedInUserId);
       this.fetchBudgetData(this.loggedInUserId);
+      this.fetchAllBudgets(this.loggedInUserId);
     }
   }
 
@@ -231,6 +234,27 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     }, error => {
       console.error('Error fetching upcoming payments:', error);
     });
+  }
+
+  fetchAllBudgets(userId: number): void {
+    this.transactionsService.getBudget(userId).subscribe((budgets: any[]) => {
+      this.allBudgets = budgets.map(b => ({
+        ...b,
+        type: 'budget',
+        date: b.created_at // or created_at if available
+      }));
+      this.updateCombinedActivities();
+    });
+  }
+
+  private updateCombinedActivities(): void {
+    this.combinedActivities = [
+      ...this.allIncomes.map(i => ({...i, type: 'income'})),
+      ...this.allExpenses.map(e => ({...e, type: 'expense'})),
+      ...this.allBudgets.map(b => ({...b, type: 'budget'}))
+    ].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
   }
 
   fetchIncomeData(userId: number): void {
@@ -432,7 +456,7 @@ updateSavingsChart(): void {
     this.transactionsService.getIncomes(userId).subscribe((incomes: any[]) => {
       // Assign all incomes directly to `allIncomes`
       this.allIncomes = incomes;
-  
+      this.updateCombinedActivities();
       // Trigger change detection to update the view
       this.cdr.detectChanges();
     }, error => {
@@ -444,13 +468,22 @@ updateSavingsChart(): void {
     this.transactionsService.getExpenses(userId).subscribe((expenses: any[]) => {
       // Assign all expenses directly to `allExpenses`
       this.allExpenses = expenses;
-  
+      this.updateCombinedActivities();
+
       // Trigger change detection to update the view
       this.cdr.detectChanges();
     }, error => {
       console.error('Error fetching all expenses:', error);
     });
   }  
+
+  getActivityColor(type: string): string {
+    return {
+      'income': '#2ecc71',    // Green
+      'expense': '#e74c3c',   // Red
+      'budget': '#3498db'     // Blue
+    }[type] || '#95a5a6';
+  }
 
   markAsPaid(payment: any): void {
     if (!payment || payment.Paid) {
@@ -524,6 +557,13 @@ updateSavingsChart(): void {
   
   closeIncomeModal() {
     this.showIncomeModal = false;
+    if (this.loggedInUserId) {
+      this.fetchExpenseData(this.loggedInUserId);
+      this.fetchBudgetData(this.loggedInUserId);
+      this.updateSavingsChart();
+      this.fetchAllExpenses(this.loggedInUserId);
+      this.fetchAllIncomes(this.loggedInUserId);
+    }
   }
   
   onIncomeSaved(incomeData: any) {

@@ -1,60 +1,51 @@
 <div class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header">
-      <h2>Recent Activities</h2>
-      <button class="close-btn">&times;</button>
+      <h2>All Transactions</h2>
+      <button class="close-btn" (click)="close()">&times;</button>
     </div>
 
     <div class="modal-body">
-      <!-- Recent Income Section -->
-      <div class="recent-section">
-        <h3>Recent Incomes</h3>
-        <ng-container *ngIf="allIncomes.length > 0; else noIncome">
-          <table class="transactions-table">
+      <div class="combined-activities">
+        <ng-container *ngIf="combinedActivities.length > 0; else noActivities">
+          <table class="activities-table">
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Category</th>
+                <th>Type</th>
+                <th>Details</th>
                 <th>Amount</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let income of allIncomes">
-                <td class="date">{{ income.date | date:'shortDate' }}</td>
-                <td class="category">{{ income.category }}</td>
-                <td class="income-amount">+${{ income.amount.toLocaleString() }}</td>
+              <tr *ngFor="let activity of combinedActivities" 
+                  [style.borderLeft]="'4px solid ' + getActivityColor(activity.type)">
+                <td class="date">{{ activity.date | date:'shortDate' }}</td>
+                <td class="type" [style.color]="getActivityColor(activity.type)">
+                  {{ activity.type | uppercase }}
+                </td>
+                <td class="details">
+                  <ng-container [ngSwitch]="activity.type">
+                    <span *ngSwitchCase="'income'">{{ activity.category }}</span>
+                    <span *ngSwitchCase="'expense'">{{ activity.category }}</span>
+                    <span *ngSwitchCase="'budget'">
+                      {{ activity.start_date | date:'shortDate' }} - {{ activity.end_date | date:'shortDate' }}
+                    </span>
+                  </ng-container>
+                </td>
+                <td class="amount" [style.color]="getActivityColor(activity.type)">
+                  <ng-container [ngSwitch]="activity.type">
+                    <span *ngSwitchCase="'income'">+{{ activity.amount | currency }}</span>
+                    <span *ngSwitchCase="'expense'">-{{ activity.amount | currency }}</span>
+                    <span *ngSwitchCase="'budget'">{{ activity.budget_amount | currency }}</span>
+                  </ng-container>
+                </td>
               </tr>
             </tbody>
           </table>
         </ng-container>
-        <ng-template #noIncome>
-          <div class="no-transactions">No recent income transactions</div>
-        </ng-template>
-      </div>
-
-      <!-- Recent Expenses Section -->
-      <div class="recent-section">
-        <h3>Recent Expenses</h3>
-        <ng-container *ngIf="allExpenses.length > 0; else noExpense">
-          <table class="transactions-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let expense of allExpenses">
-                <td class="date">{{ expense.date | date:'shortDate' }}</td>
-                <td class="category">{{ expense.category }}</td>
-                <td class="expense-amount">-${{ expense.amount.toLocaleString() }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </ng-container>
-        <ng-template #noExpense>
-          <div class="no-transactions">No recent expense transactions</div>
+        <ng-template #noActivities>
+          <div class="no-transactions">No activities found</div>
         </ng-template>
       </div>
     </div>
