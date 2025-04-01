@@ -19,7 +19,8 @@ describe('ExpenseComponent', () => {
         category: 'food',
         date: '2023-01-01',
         description: 'Lunch',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        Paid: false
       },
       {
         id: '2',
@@ -28,7 +29,8 @@ describe('ExpenseComponent', () => {
         category: 'transportation',
         date: '2023-01-02',
         description: 'Taxi',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        Paid: false
       }
     ];
 
@@ -64,7 +66,8 @@ describe('ExpenseComponent', () => {
       amount: '',
       category: '',
       date: '',
-      description: ''
+      description: '',
+      Paid: false
     };
 
     component.saveExpense();
@@ -79,7 +82,8 @@ describe('ExpenseComponent', () => {
       amount: '300',
       category: 'food',
       date: testDate,
-      description: testDescription
+      description: testDescription,
+      Paid: false
     };
 
     const expectedFormattedDate = new Date(testDate).toISOString().split('T')[0];
@@ -107,7 +111,8 @@ describe('ExpenseComponent', () => {
       amount: '200',
       category: 'trip',
       date: '2023-02-01',
-      description: 'Error scenario'
+      description: 'Error scenario',
+      Paid: false
     };
 
     const errorResponse = new Error('API failure');
@@ -176,8 +181,9 @@ describe('ExpenseComponent', () => {
   // Test for categories initialization
   it('should initialize with correct categories', () => {
     expect(component.categories).toEqual([
-      'bills', 'education', 'food', 'trip', 
-      'transportation', 'gym', 'others'
+      'Housing', 'Utilities', 'Food', 'Transportation',
+      'Healthcare', 'Insurance', 'Bills', 'Education',
+      'Entertainment', 'Fitness', 'Personal Care', 'Miscellaneous'
     ]);
   });
 });

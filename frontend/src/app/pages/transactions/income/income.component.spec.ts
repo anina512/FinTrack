@@ -16,30 +16,30 @@ describe('IncomeComponent', () => {
         id: '1',
         user_id: 1,
         amount: 1000,
-        category: 'Food',
+        category: 'Salary',
         date: '2023-01-01',
         description: 'Grocery income',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       },
       {
         id: '2',
         user_id: 1,
         amount: 2000,
-        category: 'Transport',
+        category: 'Freelance',
         date: '2023-01-02',
         description: 'Transport allowance',
-        created_at: new Date().toISOString()
-      }
+        created_at: new Date().toISOString(),
+      },
     ];
 
     mockTransactionsService = {
       addIncome: jest.fn(),
       getIncomes: jest.fn().mockReturnValue(of(mockIncomes)),
-      deleteIncome: jest.fn().mockReturnValue(of({}))
+      deleteIncome: jest.fn().mockReturnValue(of({})),
     };
 
     mockAuthService = {
-      getUserId: jest.fn().mockReturnValue(1)
+      getUserId: jest.fn().mockReturnValue(1),
     };
 
     component = new IncomeComponent(mockTransactionsService, mockAuthService);
@@ -63,7 +63,7 @@ describe('IncomeComponent', () => {
       amount: '',
       category: '',
       date: '',
-      description: ''
+      description: '',
     };
 
     component.saveIncome();
@@ -76,9 +76,9 @@ describe('IncomeComponent', () => {
     component.loggedInUserId = 1;
     component.income = {
       amount: '200',
-      category: 'Food',
+      category: 'Salary',
       date: testDate,
-      description: testDescription
+      description: testDescription,
     };
 
     const expectedFormattedDate = new Date(testDate).toISOString().split('T')[0];
@@ -89,10 +89,10 @@ describe('IncomeComponent', () => {
 
     expect(mockTransactionsService.addIncome).toHaveBeenCalledTimes(1);
     const newIncomeArg = mockTransactionsService.addIncome.mock.calls[0][0];
-    
+
     expect(newIncomeArg.user_id).toBe(1);
     expect(newIncomeArg.amount).toBe(200);
-    expect(newIncomeArg.category).toBe('Food');
+    expect(newIncomeArg.category).toBe('Salary');
     expect(newIncomeArg.date).toBe(expectedFormattedDate);
     expect(newIncomeArg.description).toBe(testDescription);
     expect(newIncomeArg.created_at).toBeDefined();
@@ -106,7 +106,7 @@ describe('IncomeComponent', () => {
       amount: '150',
       category: 'Transport',
       date: '2023-02-01',
-      description: 'Test error scenario'
+      description: 'Test error scenario',
     };
 
     const errorResponse = new Error('Network error');
@@ -150,7 +150,7 @@ describe('IncomeComponent', () => {
 
       expect(mockTransactionsService.deleteIncome).toHaveBeenCalledWith('1');
       expect(component.incomeList.length).toBe(initialLength - 1);
-      expect(component.incomeList.some(i => i.id === '1')).toBe(false);
+      expect(component.incomeList.some((i) => i.id === '1')).toBe(false);
     });
 
     it('should handle error when deletion fails', () => {
@@ -174,8 +174,6 @@ describe('IncomeComponent', () => {
 
   // Test for categories initialization
   it('should initialize with correct categories', () => {
-    expect(component.categories).toEqual([
-      'Food', 'Transport', 'Housing', 'Entertainment', 'Utilities'
-    ]);
+    expect(component.categories).toEqual(['Salary', 'Freelance', 'Business', 'Investments', 'Rent', 'Benefits', 'Gifts', 'Other']);
   });
 });
