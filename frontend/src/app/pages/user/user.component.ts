@@ -26,9 +26,7 @@ export class UserComponent implements OnInit {
 
   ngOnInit(): void {
     // Get user ID from route or local storage
-    console.log('hengjsbvjs')
     this.loggedInUserId = this.authservice.getUserId();
-    console.log(this.loggedInUserId)
     if (this.loggedInUserId) {
       this.fetchUserData();
     }

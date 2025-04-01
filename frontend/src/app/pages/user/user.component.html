@@ -1,22 +1,33 @@
 <app-side-nav></app-side-nav>
-<div class="user-container">
+<div class="user-profile-container">
     <!-- Loading state -->
-    <div *ngIf="!user.id" class="loading">Loading user data...</div>
-    
-    <!-- User Info Section -->
-    <div *ngIf="user.id" class="user-info">
-        <h2 class="label">Username:</h2>
-        <p class="value">{{ user.username }}</p>
-
-        <h2 class="label">Full Name:</h2>
-        <p class="value">{{ user.fullName }}</p>
-
-        <h2 class="label">Email ID:</h2>
-        <p class="value">{{ user.email }}</p>
+    <div *ngIf="!user.id" class="loading-state">
+        <div class="loader"></div>
+        <p>Loading profile...</p>
     </div>
     
-    <div class="user-actions">
-        <button (click)="editProfile()">Edit Profile</button>
-        <button class="logout-btn" (click)="logout()">Logout</button>
+    <!-- User Info Section -->
+    <div *ngIf="user.id" class="profile-card">
+        <div class="profile-header">
+            <h1 class="profile-title">User Profile</h1>
+            <div class="decorative-line"></div>
+        </div>
+
+        <div class="profile-info">
+            <div class="info-item">
+                <span class="info-label">Username</span>
+                <p class="info-value">{{ user.username }}</p>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Full Name</span>
+                <p class="info-value">{{ user.fullName }}</p>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Email Address</span>
+                <p class="info-value">{{ user.email }}</p>
+            </div>
+        </div>
     </div>
 </div>
