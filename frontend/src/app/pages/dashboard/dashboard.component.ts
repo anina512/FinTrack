@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
 import { startOfDay, subDays, isSameDay, format, parseISO } from 'date-fns';
 import { ActivitiesModalComponent } from '../../activities-modal/activities-modal.component';
 import { Budget } from '../../models/transactions.model';
+import { ActivatedRoute, Router } from '@angular/router';
 
 interface ChartData {
   labels: string[];
@@ -51,7 +52,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     labels: ['Saved', 'Remaining'],
     datasets: [
       {
-        data: [82, 18],
+        data:[] as number[],
         backgroundColor: ['#f1c40f', '#ecf0f1'],
         borderWidth: 0,
       },
@@ -130,12 +131,26 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     public budgetInstance: BudgetComponent,
     private transactionsService: TransactionsService,
     private authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     Chart.register(...registerables);
   }
 
   ngOnInit(): void {
+    const token = this.route.snapshot.queryParamMap.get('token');
+    if (token) {
+      if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('jwt', token);
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        queryParamsHandling: 'merge'
+      });
+    }
+       // clean up URL
+    }
     this.loggedInUserId = this.authService.getUserId();
     if (this.loggedInUserId) {
       this.fetchIncomeData(this.loggedInUserId);

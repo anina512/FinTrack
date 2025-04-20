@@ -25,9 +25,14 @@
         <button mat-raised-button color="primary" type="submit" class="submit-btn" (click)="onSubmit()">
           Login
         </button>
-  
         <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
       </form>
+      <div class="separator">OR</div>
+      <div class="google-icon-wrapper">
+        <button mat-icon-button class="google-icon-btn" (click)="loginWithGoogle()" type="button">
+          <img src="assets/google-logo.png" alt="Google Login" class="google-icon" />
+        </button>
+      </div>       
       <p class="register-text">Don't have an account? 
         <a (click)="goToRegister()" class="register-link">Register here</a>
       </p>
