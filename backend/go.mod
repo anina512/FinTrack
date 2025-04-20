@@ -2,10 +2,17 @@ module main.go
 
 go 1.23.3
 
-require gorm.io/driver/sqlite v1.5.7
+require (
+	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/joho/godotenv v1.5.1
+	golang.org/x/oauth2 v0.29.0
+	gorm.io/driver/sqlite v1.5.7
+)
 
 require (
+	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )

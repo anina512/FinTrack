@@ -1,17 +1,30 @@
 package main
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
+	"io"
+	"log"
 	"net/http"
+	"os"
+	"strings"
 	"time"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
+var oauthConf *oauth2.Config
+var jwtKey []byte
 
 // User struct
 type User struct {
@@ -55,17 +68,38 @@ type Income struct {
 	CreatedAt   string  `json:"created_at"`
 }
 
+func initEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	oauthConf = &oauth2.Config{
+		RedirectURL:  "http://localhost:8080/oauth2/callback",
+		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/userinfo.profile",
+		},
+		Endpoint: google.Endpoint,
+	}
+
+	jwtKey = []byte(os.Getenv("JWT_SECRET"))
+}
+
 func initDB() {
 	var err error
 	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("Failed to connect to database")
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	db.AutoMigrate(&User{}, &Expense{}, &Budget{}, &Income{})
 }
 
 func main() {
+	initEnv()
 	initDB()
 	router := gin.Default()
 
@@ -77,7 +111,8 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-
+	router.GET("/login/google", StartGoogleLogin)
+	router.GET("/oauth2/callback", HandleGoogleCallback)
 	router.POST("/register", RegisterUser)
 	router.POST("/login", LoginUser)
 	router.POST("/expenses", AddExpense)
@@ -93,6 +128,76 @@ func main() {
 	router.GET("/users", GetUser)
 
 	router.Run(":8080")
+}
+
+func StartGoogleLogin(c *gin.Context) {
+	state := generateStateToken()
+	c.SetCookie("oauthstate", state, 300, "/", "localhost", false, true)
+	url := oauthConf.AuthCodeURL(state, oauth2.AccessTypeOffline)
+	c.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+func HandleGoogleCallback(c *gin.Context) {
+	cookieState, _ := c.Cookie("oauthstate")
+	if c.Query("state") != cookieState {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid state"})
+		return
+	}
+
+	token, err := oauthConf.Exchange(context.Background(), c.Query("code"))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to exchange code"})
+		return
+	}
+
+	client := oauthConf.Client(context.Background(), token)
+	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user info"})
+		return
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+
+	var userInfo map[string]interface{}
+	if err := json.Unmarshal(body, &userInfo); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user info"})
+		return
+	}
+
+	email := userInfo["email"].(string)
+	fullName := userInfo["name"].(string)
+
+	var user User
+	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
+		user = User{
+			FullName: fullName,
+			Username: strings.Split(email, "@")[0],
+			Email:    email,
+			Password: "google-oauth",
+		}
+		db.Create(&user)
+	}
+
+	tokenStr := generateJWT(email, user.ID)
+	c.Redirect(http.StatusSeeOther, "http://localhost:4200/dashboard?token="+tokenStr)
+}
+
+func generateJWT(email string, userID uint) string {
+	claims := jwt.MapClaims{
+		"email":  email,
+		"userId": userID,
+		"exp":    time.Now().Add(24 * time.Hour).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signed, _ := token.SignedString(jwtKey)
+	return signed
+}
+
+func generateStateToken() string {
+	b := make([]byte, 16)
+	_, _ = rand.Read(b)
+	return base64.URLEncoding.EncodeToString(b)
 }
 
 func RegisterUser(c *gin.Context) {
