@@ -3,23 +3,38 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080'; // Your Go backend URL
-  private userId = new BehaviorSubject<number | null>(null); // Store userId
+  private apiUrl = 'http://localhost:8080';
+  private userId = new BehaviorSubject<number | null>(null);
 
   constructor(
     private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: object // Inject platform check
+    @Inject(PLATFORM_ID) private platformId: object
   ) {
     if (isPlatformBrowser(this.platformId)) {
-      // Initialize user ID if already stored in sessionStorage
       const storedUserId = sessionStorage.getItem('userId');
+
       if (storedUserId) {
         this.userId.next(Number(storedUserId));
+      } else {
+        const token = localStorage.getItem('jwt');
+        if (token) {
+          try {
+            const decoded: any = jwtDecode(token);
+            const userIdFromToken = decoded.userId;
+            if (userIdFromToken) {
+              sessionStorage.setItem('userId', userIdFromToken.toString());
+              this.userId.next(userIdFromToken);
+            }
+          } catch (err) {
+            console.error('Failed to decode JWT:', err);
+          }
+        }
       }
     }
   }
@@ -34,7 +49,7 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/login`, user).pipe(
       tap(response => {
         if (response && response.userId && isPlatformBrowser(this.platformId)) {
-          sessionStorage.setItem('userId', response.userId.toString()); // Ensure it's stored as a string
+          sessionStorage.setItem('userId', response.userId.toString());
           this.userId.next(response.userId);
         }
       })
@@ -56,6 +71,7 @@ export class AuthService {
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
       sessionStorage.removeItem('userId');
+      localStorage.removeItem('jwt');
       this.userId.next(null);
     }
   }

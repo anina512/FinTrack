@@ -44,6 +44,31 @@
     margin: -10px 0 15px;
   }
   
+  .google-icon-btn {
+    margin-top: 15px;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid #ccc;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+  }
+  
+  .google-icon-btn:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+  }
+  
+  .google-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .separator {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #999;
+  }
+  
+  
   /* Submit button */
   .submit-btn {
     width: 100%;
