@@ -9,7 +9,7 @@ import { TransactionsService } from '../../services/transactions.service';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { startOfDay, subDays, isSameDay, format, parseISO } from 'date-fns';
-import { ActivitiesModalComponent } from '../../activities-modal/activities-modal.component';
+import { ActivitiesModalComponent } from '../../shared/activities-modal/activities-modal.component';
 import { Budget } from '../../models/transactions.model';
 import { ActivatedRoute, Router } from '@angular/router';
 
