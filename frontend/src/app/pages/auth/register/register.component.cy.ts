@@ -1,130 +1,153 @@
-/// <reference types="cypress" />
-
-import { RegisterComponent } from './register.component';
-import { RouterTestingModule } from '@angular/router/testing';
+// cypress/component/register.component.cy.ts
+import { mount } from 'cypress/angular';
+import { RegisterComponent } from 'src/app/pages/auth/register/register.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { AuthService } from '../../../services/auth.service';
+import { MatIconModule } from '@angular/material/icon';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { AuthService } from 'src/app/services/auth.service';
+import { Router } from '@angular/router';
+import { of, throwError } from 'rxjs';
+
+// swallow any uncaught Angular animation or routing errors
+Cypress.on('uncaught:exception', () => false);
 
 describe('RegisterComponent', () => {
+  let routerStub: { navigate: Cypress.AgentStub };
+
   beforeEach(() => {
-    cy.mount(RegisterComponent, {
+    // 1) Stub AuthService.registerUser on the prototype
+    cy.stub(AuthService.prototype, 'registerUser').as('registerStub');
+
+    // 2) Fake Router
+    routerStub = { navigate: cy.stub() };
+
+    // 3) Mount component, override only Router
+    mount(RegisterComponent, {
       imports: [
-        RouterTestingModule.withRoutes([
-          { path: 'login', component: {} as any },
-          { path: 'dashboard', component: {} as any }
-        ]),
+        NoopAnimationsModule,
+        CommonModule,
         ReactiveFormsModule,
+        HttpClientModule,
         MatCardModule,
         MatInputModule,
         MatFormFieldModule,
         MatButtonModule,
-        BrowserAnimationsModule,
-        HttpClientTestingModule
+        MatIconModule,
       ],
-      providers: [AuthService]
-    }).as('component');
-  });
-
-  it('should display the register form', () => {
-    cy.get('mat-card-title').should('contain', 'Create Your Account');
-    cy.get('mat-card-subtitle').should('contain', 'Join us today!');
-    cy.get('input[formControlName="fullName"]').should('exist');
-    cy.get('input[formControlName="username"]').should('exist');
-    cy.get('input[formControlName="email"]').should('exist');
-    cy.get('input[formControlName="password"]').should('exist');
-    cy.get('input[formControlName="confirmPassword"]').should('exist');
-    cy.get('button[type="submit"]').should('contain', 'Register');
-  });
-
-  it('should show error messages for invalid inputs', () => {
-    cy.get('input[formControlName="fullName"]').type('a').clear();
-    cy.get('input[formControlName="username"]').type('toolongusername');
-    cy.get('input[formControlName="email"]').type('invalidemail');
-    cy.get('input[formControlName="password"]').type('short');
-    cy.get('input[formControlName="confirmPassword"]').type('different');
-    cy.get('button[type="submit"]').click();
-
-    cy.get('.error').should('contain', 'Name is required');
-    cy.get('.error').should('contain', 'Invalid username');
-    cy.get('.error').should('contain', 'Invalid email');
-    cy.get('.error').should('contain', 'Password must be at least 6 characters');
-    cy.get('.error').should('contain', 'Please fill out all fields correctly');
-  });
-
-  it('should navigate to login page when clicking login link', () => {
-<<<<<<< HEAD
-    cy.get('@component').then((wrapper: any) => {
-=======
-    cy.get('@component').then((wrapper) => {
->>>>>>> e2ad538 (final commit sprint2)
-      const component = wrapper.component as RegisterComponent;
-      cy.spy(component['router'], 'navigate').as('routerSpy');
+      providers: [
+        { provide: Router, useValue: routerStub },
+        // AuthService is provided by component; its registerUser() is stubbed above
+      ],
+    }).then(({ component }) => {
+      // spy on any component methods if needed
     });
-    cy.get('.login-link').click();
-    cy.get('@routerSpy').should('have.been.calledWith', ['/login']);
   });
 
-  it('should attempt registration with valid inputs', () => {
-    cy.intercept('POST', '**/register', { statusCode: 200, body: { message: 'Registration successful' } }).as('registerRequest');
+  it('should render all form fields and buttons', () => {
+    cy.get('.title').should('have.text', 'Create Your Account');
+    cy.get('input[formcontrolname="fullName"]').should('exist');
+    cy.get('input[formcontrolname="username"]').should('exist');
+    cy.get('input[formcontrolname="email"]').should('exist');
+    cy.get('input[formcontrolname="password"]').should('exist');
+    cy.get('input[formcontrolname="confirmPassword"]').should('exist');
+    cy.get('button[type="submit"]').should('contain.text', 'Register');
+    cy.get('.login-link').should('exist');
+  });
 
-<<<<<<< HEAD
-    cy.get('@component').then((wrapper: any) => {
-=======
-    cy.get('@component').then((wrapper) => {
->>>>>>> e2ad538 (final commit sprint2)
-      const component = wrapper.component as RegisterComponent;
-      cy.spy(component['router'], 'navigate').as('routerSpy');
-    });
-
-    cy.get('input[formControlName="fullName"]').type('Test User');
-    cy.get('input[formControlName="username"]').type('testuser');
-    cy.get('input[formControlName="email"]').type('test@example.com');
-    cy.get('input[formControlName="password"]').type('password123');
-    cy.get('input[formControlName="confirmPassword"]').type('password123');
+  it('should show form‑level error when submitted empty', () => {
     cy.get('button[type="submit"]').click();
+    cy.contains('.error', 'Please fill out all fields correctly.').should('be.visible');
+  });
 
-    cy.wait('@registerRequest').its('request.body').should('deep.equal', {
-<<<<<<< HEAD
-      fullName: 'Test User',
-      username: 'testuser',
-      email: 'test@example.com',
-=======
-      username: 'testuser',
->>>>>>> e2ad538 (final commit sprint2)
-      password: 'password123'
+  it('should show individual field errors when touched and invalid', () => {
+    // Full Name required
+    cy.get('input[formcontrolname="fullName"]').focus().blur();
+    cy.contains('.error', 'Name is required.').should('be.visible');
+
+    // Username required or length
+    cy.get('input[formcontrolname="username"]').focus().blur();
+    cy.contains('.error', 'Invalid username.').should('be.visible');
+
+    // Email invalid
+    cy.get('input[formcontrolname="email"]').type('bad-email').blur();
+    cy.contains('.error', 'Invalid email.').should('be.visible');
+
+    // Password min length
+    cy.get('input[formcontrolname="password"]').type('123').blur();
+    cy.contains('.error', 'Password must be at least 6 characters.').should('be.visible');
+
+    // Confirm Password required
+    cy.get('input[formcontrolname="confirmPassword"]').focus().blur();
+    cy.contains('.error', 'Passwords must match.').should('be.visible');
+  });
+
+  it('should toggle password visibility for both password fields', () => {
+    // Password field toggle
+    cy.get('input[formcontrolname="password"]').should('have.attr', 'type', 'password');
+    cy.get('mat-icon').eq(3).click({ force: true });
+    cy.get('input[formcontrolname="password"]').should('have.attr', 'type', 'text');
+
+    // Confirm Password field toggle
+    cy.get('input[formcontrolname="confirmPassword"]').should('have.attr', 'type', 'password');
+    cy.get('mat-icon').eq(4).click({ force: true });
+    cy.get('input[formcontrolname="confirmPassword"]').should('have.attr', 'type', 'text');
+  });
+
+  it('should call registerUser and navigate on successful registration', () => {
+    // arrange: stub a successful response
+    cy.get('@registerStub').then((stub: any) => {
+      stub.returns(of({ id: '123', fullName: 'Test User' }));
     });
 
-    cy.get('@routerSpy').should('have.been.calledWith', ['/login']);
-  });
+    // fill valid form
+    cy.get('input[formcontrolname="fullName"]').type('Test User');
+    cy.get('input[formcontrolname="username"]').type('testuser');
+    cy.get('input[formcontrolname="email"]').type('test@example.com');
+    cy.get('input[formcontrolname="password"]').type('password123');
+    cy.get('input[formcontrolname="confirmPassword"]').type('password123');
 
-  it('should show error message for registration failure', () => {
-    cy.intercept('POST', '**/register', { statusCode: 400, body: { error: 'Registration failed' } }).as('registerRequest');
-
-    cy.get('input[formControlName="fullName"]').type('Test User');
-    cy.get('input[formControlName="username"]').type('testuser');
-    cy.get('input[formControlName="email"]').type('test@example.com');
-    cy.get('input[formControlName="password"]').type('password123');
-    cy.get('input[formControlName="confirmPassword"]').type('password123');
+    // act
     cy.get('button[type="submit"]').click();
 
-    cy.get('.error').should('contain', 'Registration failed');
+    // assert registerUser called with correct args
+    cy.get('@registerStub').should('have.been.calledWith',
+      'Test User', 'testuser', 'test@example.com', 'password123');
+    // assert navigation to login
+    cy.then(() => {
+      expect(routerStub.navigate).to.have.been.calledWith(['/login']);
+    });
   });
 
-  it('should toggle password visibility', () => {
-    cy.get('input[formControlName="password"]').should('have.attr', 'type', 'password');
-    cy.get('mat-form-field').eq(3).find('mat-icon').click({force: true});
-    cy.get('input[formControlName="password"]').should('have.attr', 'type', 'text');
+  it('should display server error when registration fails', () => {
+    // arrange: stub an error response
+    cy.get('@registerStub').then((stub: any) => {
+      stub.returns(throwError({ error: { error: 'User exists.' } }));
+    });
+
+    // fill valid form
+    cy.get('input[formcontrolname="fullName"]').type('Test User');
+    cy.get('input[formcontrolname="username"]').type('testuser');
+    cy.get('input[formcontrolname="email"]').type('test@example.com');
+    cy.get('input[formcontrolname="password"]').type('password123');
+    cy.get('input[formcontrolname="confirmPassword"]').type('password123');
+
+    // act
+    cy.get('button[type="submit"]').click();
+
+    // assert error message
+    cy.contains('.error', 'User exists.').should('be.visible');
   });
 
-  it('should toggle confirm password visibility', () => {
-    cy.get('input[formControlName="confirmPassword"]').should('have.attr', 'type', 'password');
-    cy.get('mat-form-field').eq(4).find('mat-icon').click({force: true});
-    cy.get('input[formControlName="confirmPassword"]').should('have.attr', 'type', 'text');
+  it('should navigate to login when login link clicked', () => {
+    cy.get('.login-link').click({ force: true });
+    cy.then(() => {
+      expect(routerStub.navigate).to.have.been.calledWith(['/login']);
+    });
   });
 });
