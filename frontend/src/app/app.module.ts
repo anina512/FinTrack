@@ -21,7 +21,7 @@ import { BudgetComponent } from './pages/transactions/budget/budget.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
 import { TransactionsService } from './services/transactions.service';
-import { ActivitiesModalComponent } from './activities-modal/activities-modal.component';
+import { ActivitiesModalComponent } from './shared/activities-modal/activities-modal.component';
 import { UserComponent } from './pages/user/user.component';
 
 @NgModule({

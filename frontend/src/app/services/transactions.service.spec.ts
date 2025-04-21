@@ -1,5 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController
+} from '@angular/common/http/testing';
 import { TransactionsService } from './transactions.service';
 
 describe('TransactionsService', () => {
@@ -13,8 +16,8 @@ describe('TransactionsService', () => {
       providers: [TransactionsService]
     });
 
-    service = TestBed.inject(TransactionsService);
-    httpMock = TestBed.inject(HttpTestingController);
+    service   = TestBed.inject(TransactionsService);
+    httpMock  = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {
@@ -25,147 +28,125 @@ describe('TransactionsService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('addIncome', () => {
-    it('should send a POST request to add income', () => {
-      const mockIncome = { amount: 1000, description: 'Salary' };
+  /* ────────────────  Income  ──────────────── */
+  it('addIncome ⇒ POST /incomes', () => {
+    const income = { amount: 1000, description: 'Salary' };
 
-      service.addIncome(mockIncome).subscribe(response => {
-        expect(response).toEqual(mockIncome);
-      });
+    service.addIncome(income).subscribe(r => expect(r).toEqual(income));
 
-      const req = httpMock.expectOne(`${baseUrl}/incomes`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(mockIncome);
-
-      req.flush(mockIncome);
-    });
+    const req = httpMock.expectOne(`${baseUrl}/incomes`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(income);
+    req.flush(income);
   });
 
-  describe('getIncomes', () => {
-    it('should send a GET request to get incomes', () => {
-      const userID = 1;
-      const mockIncomes = [{ amount: 1000, description: 'Salary' }];
-      const url = `${baseUrl}/incomes?user_id=${userID}`;
+  it('getIncomes ⇒ GET /incomes?user_id', () => {
+    const userId = 1;
+    const mock   = [{ amount: 1000, description: 'Salary' }];
 
-      service.getIncomes(userID).subscribe(response => {
-        expect(response).toEqual(mockIncomes);
-      });
+    service.getIncomes(userId).subscribe(r => expect(r).toEqual(mock));
 
-      const req = httpMock.expectOne(url);
-      expect(req.request.method).toBe('GET');
-
-      req.flush(mockIncomes);
-    });
+    const req = httpMock.expectOne(`${baseUrl}/incomes?user_id=${userId}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mock);
   });
 
-  describe('deleteIncome', () => {
-    it('should send a DELETE request to delete income', () => {
-      const incomeID = 1;
+  it('deleteIncome ⇒ DELETE /incomes/:id', () => {
+    const id = 1;
 
-      service.deleteIncome(incomeID).subscribe(response => {
-        expect(response).toBeNull();
-      });
+    service.deleteIncome(id).subscribe(r => expect(r).toBeNull());
 
-      const req = httpMock.expectOne(`${baseUrl}/incomes/${incomeID}`);
-      expect(req.request.method).toBe('DELETE');
-
-      req.flush(null);
-    });
+    const req = httpMock.expectOne(`${baseUrl}/incomes/${id}`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
   });
 
-  describe('addExpense', () => {
-    it('should send a POST request to add expense', () => {
-      const mockExpense = { amount: 500, description: 'Groceries' };
+  /* ────────────────  Expense  ─────────────── */
+  it('addExpense ⇒ POST /expenses', () => {
+    const exp = { amount: 500, description: 'Groceries' };
 
-      service.addExpense(mockExpense).subscribe(response => {
-        expect(response).toEqual(mockExpense);
-      });
+    service.addExpense(exp).subscribe(r => expect(r).toEqual(exp));
 
-      const req = httpMock.expectOne(`${baseUrl}/expenses`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(mockExpense);
-
-      req.flush(mockExpense);
-    });
+    const req = httpMock.expectOne(`${baseUrl}/expenses`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(exp);
+    req.flush(exp);
   });
 
-  describe('getExpenses', () => {
-    it('should send a GET request to get expenses', () => {
-      const userID = 1;
-      const mockExpenses = [{ amount: 500, description: 'Groceries' }];
-      const url = `${baseUrl}/expenses?user_id=${userID}`;
+  it('getExpenses ⇒ GET /expenses?user_id', () => {
+    const userId = 1;
+    const mock   = [{ amount: 500, description: 'Groceries' }];
 
-      service.getExpenses(userID).subscribe(response => {
-        expect(response).toEqual(mockExpenses);
-      });
+    service.getExpenses(userId).subscribe(r => expect(r).toEqual(mock));
 
-      const req = httpMock.expectOne(url);
-      expect(req.request.method).toBe('GET');
-
-      req.flush(mockExpenses);
-    });
+    const req = httpMock.expectOne(`${baseUrl}/expenses?user_id=${userId}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mock);
   });
 
-  describe('deleteExpense', () => {
-    it('should send a DELETE request to delete expense', () => {
-      const expenseID = 1;
+  it('deleteExpense ⇒ DELETE /expenses/:id', () => {
+    const id = 1;
 
-      service.deleteExpense(expenseID).subscribe(response => {
-        expect(response).toBeNull();
-      });
+    service.deleteExpense(id).subscribe(r => expect(r).toBeNull());
 
-      const req = httpMock.expectOne(`${baseUrl}/expenses/${expenseID}`);
-      expect(req.request.method).toBe('DELETE');
-
-      req.flush(null);
-    });
+    const req = httpMock.expectOne(`${baseUrl}/expenses/${id}`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
   });
 
-  describe('addBudget', () => {
-    it('should send a POST request to add budget', () => {
-      const mockBudget = { amount: 2000, category: 'Monthly Budget' };
+  it('updateExpense ⇒ PUT /expenses/:id/paid', () => {
+    const exp = { id: 9, amount: 50, paid: true };
 
-      service.addBudget(mockBudget).subscribe(response => {
-        expect(response).toEqual(mockBudget);
-      });
+    service.updateExpense(exp).subscribe(r => expect(r).toEqual(exp));
 
-      const req = httpMock.expectOne(`${baseUrl}/budget`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(mockBudget);
-
-      req.flush(mockBudget);
-    });
+    const req = httpMock.expectOne(`${baseUrl}/expenses/${exp.id}/paid`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(exp);
+    req.flush(exp);
   });
 
-  describe('getBudget', () => {
-    it('should send a GET request to get budget', () => {
-      const userID = 1;
-      const mockBudget = { amount: 2000, category: 'Monthly Budget' };
-      const url = `${baseUrl}/budget?user_id=${userID}`;
+  /* ────────────────  Budget  ──────────────── */
+  it('addBudget ⇒ POST /budget', () => {
+    const budget = { amount: 2000, category: 'Monthly Budget' };
 
-      service.getBudget(userID).subscribe(response => {
-        expect(response).toEqual(mockBudget);
-      });
+    service.addBudget(budget).subscribe(r => expect(r).toEqual(budget));
 
-      const req = httpMock.expectOne(url);
-      expect(req.request.method).toBe('GET');
-
-      req.flush(mockBudget);
-    });
+    const req = httpMock.expectOne(`${baseUrl}/budget`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(budget);
+    req.flush(budget);
   });
 
-  describe('deleteBudget', () => {
-    it('should send a DELETE request to delete budget', () => {
-      const budgetId = 1;
+  it('getBudget ⇒ GET /budget?user_id', () => {
+    const userId = 1;
+    const mock   = { amount: 2000, category: 'Monthly Budget' };
 
-      service.deleteBudget(budgetId).subscribe(response => {
-        expect(response).toBeNull();
-      });
+    service.getBudget(userId).subscribe(r => expect(r).toEqual(mock));
 
-      const req = httpMock.expectOne(`${baseUrl}/budget/${budgetId}`);
-      expect(req.request.method).toBe('DELETE');
+    const req = httpMock.expectOne(`${baseUrl}/budget?user_id=${userId}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mock);
+  });
 
-      req.flush(null);
-    });
+  it('deleteBudget ⇒ DELETE /budget/:id', () => {
+    const id = 1;
+
+    service.deleteBudget(id).subscribe(r => expect(r).toBeNull());
+
+    const req = httpMock.expectOne(`${baseUrl}/budget/${id}`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+  });
+
+  /* ────────────────  User  ─────────────── */
+  it('getUser ⇒ GET /users?user_id', () => {
+    const userId = 3;
+    const mock   = { id: 3, name: 'Alice' };
+
+    service.getUser(userId).subscribe(r => expect(r).toEqual(mock));
+
+    const req = httpMock.expectOne(`${baseUrl}/users?user_id=${userId}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mock);
   });
 });

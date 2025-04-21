@@ -8,7 +8,7 @@ import { SideNavComponent } from 'src/app/shared/side-nav/side-nav.component';
 import { ExpenseComponent } from 'src/app/pages/transactions/expense/expense.component';
 import { IncomeComponent } from 'src/app/pages/transactions/income/income.component';
 import { BudgetComponent } from 'src/app/pages/transactions/budget/budget.component';
-import { ActivitiesModalComponent } from 'src/app/activities-modal/activities-modal.component';
+import { ActivitiesModalComponent } from 'src/app/shared/activities-modal/activities-modal.component';
 import { TransactionsService } from 'src/app/services/transactions.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';

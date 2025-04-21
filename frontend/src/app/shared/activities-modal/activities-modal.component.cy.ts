@@ -1,6 +1,6 @@
 // cypress/component/activities-modal.component.cy.ts
 import { mount } from 'cypress/angular';
-import { ActivitiesModalComponent } from 'src/app/activities-modal/activities-modal.component';
+import { ActivitiesModalComponent } from 'src/app/shared/activities-modal/activities-modal.component';
 import { CommonModule } from '@angular/common';
 
 // swallow any unexpected errors

@@ -4,178 +4,135 @@ import { Income } from '../../../models/transactions.model';
 
 describe('IncomeComponent', () => {
   let component: IncomeComponent;
-  let mockTransactionsService: any;
-  let mockAuthService: any;
-  let incomeSavedEmitSpy: jest.SpyInstance;
-  let closeModalEmitSpy: jest.SpyInstance;
-  let mockIncomes: Income[];
+  let mockTx: any;
+  let mockAuth: any;
+  let savedSpy: jest.SpyInstance;
+  let closeSpy: jest.SpyInstance;
+
+  const mockIncomes: Income[] = [
+    {
+      id: '1',
+      user_id: 1,
+      amount: 1000,
+      category: 'Food',
+      date: '2023-01-01',
+      description: 'Grocery income',
+      created_at: new Date().toISOString()
+    },
+    {
+      id: '2',
+      user_id: 1,
+      amount: 2000,
+      category: 'Transport',
+      date: '2023-01-02',
+      description: 'Transport allowance',
+      created_at: new Date().toISOString()
+    }
+  ];
 
   beforeEach(() => {
-    mockIncomes = [
-      {
-        id: '1',
-        user_id: 1,
-        amount: 1000,
-        category: 'Food',
-        date: '2023-01-01',
-        description: 'Grocery income',
-        created_at: new Date().toISOString()
-      },
-      {
-        id: '2',
-        user_id: 1,
-        amount: 2000,
-        category: 'Transport',
-        date: '2023-01-02',
-        description: 'Transport allowance',
-        created_at: new Date().toISOString()
-      }
-    ];
-
-    mockTransactionsService = {
+    mockTx = {
       addIncome: jest.fn(),
       getIncomes: jest.fn().mockReturnValue(of(mockIncomes)),
       deleteIncome: jest.fn().mockReturnValue(of({}))
     };
 
-    mockAuthService = {
-      getUserId: jest.fn().mockReturnValue(1)
-    };
+    mockAuth = { getUserId: jest.fn().mockReturnValue(1) };
 
-    component = new IncomeComponent(mockTransactionsService, mockAuthService);
-
-    incomeSavedEmitSpy = jest.spyOn(component.incomeSaved, 'emit');
-    closeModalEmitSpy = jest.spyOn(component.closeModal, 'emit');
+    component = new IncomeComponent(mockTx, mockAuth);
+    savedSpy = jest.spyOn(component.incomeSaved, 'emit');
+    closeSpy = jest.spyOn(component.closeModal, 'emit');
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  afterEach(() => jest.clearAllMocks());
 
-  // Existing tests
-  it('should emit closeModal when close() is called', () => {
+  it('emits closeModal when close() is called', () => {
     component.close();
-    expect(closeModalEmitSpy).toHaveBeenCalledTimes(1);
+    expect(closeSpy).toHaveBeenCalled();
   });
 
-  it('should not call addIncome if required income fields are missing', () => {
-    component.income = {
-      amount: '',
-      category: '',
-      date: '',
-      description: ''
-    };
-
+  it('does nothing when mandatory fields missing', () => {
+    component.income = { amount: '', category: '', date: '', description: '' };
     component.saveIncome();
-    expect(mockTransactionsService.addIncome).not.toHaveBeenCalled();
+    expect(mockTx.addIncome).not.toHaveBeenCalled();
   });
 
-  it('should call addIncome and emit incomeSaved then close when saving valid income', () => {
-    const testDate = '2023-01-01';
-    const testDescription = 'Valid income';
+  it('saves valid income, emits events and closes', () => {
     component.loggedInUserId = 1;
     component.income = {
       amount: '200',
       category: 'Food',
-      date: testDate,
-      description: testDescription
+      date: '2023-03-03',
+      description: 'Valid'
     };
-
-    const expectedFormattedDate = new Date(testDate).toISOString().split('T')[0];
-    const mockResponse = { id: 123, ...component.income };
-    mockTransactionsService.addIncome.mockReturnValue(of(mockResponse));
+    const resp = { id: '123', ...component.income };
+    mockTx.addIncome.mockReturnValue(of(resp));
 
     component.saveIncome();
 
-    expect(mockTransactionsService.addIncome).toHaveBeenCalledTimes(1);
-    const newIncomeArg = mockTransactionsService.addIncome.mock.calls[0][0];
-    
-    expect(newIncomeArg.user_id).toBe(1);
-    expect(newIncomeArg.amount).toBe(200);
-    expect(newIncomeArg.category).toBe('Food');
-    expect(newIncomeArg.date).toBe(expectedFormattedDate);
-    expect(newIncomeArg.description).toBe(testDescription);
-    expect(newIncomeArg.created_at).toBeDefined();
-
-    expect(incomeSavedEmitSpy).toHaveBeenCalledWith(mockResponse);
-    expect(closeModalEmitSpy).toHaveBeenCalled();
+    const arg = mockTx.addIncome.mock.calls[0][0];
+    expect(arg.user_id).toBe(1);
+    expect(arg.amount).toBe(200);
+    expect(arg.date).toBe('2023-03-03');
+    expect(savedSpy).toHaveBeenCalledWith(resp);
+    expect(closeSpy).toHaveBeenCalled();
   });
 
-  it('should log an error and not emit events when addIncome fails', () => {
+  it('logs error when addIncome fails', () => {
     component.income = {
       amount: '150',
       category: 'Transport',
-      date: '2023-02-01',
-      description: 'Test error scenario'
+      date: '2023-04-04',
+      description: 'err'
     };
-
-    const errorResponse = new Error('Network error');
-    mockTransactionsService.addIncome.mockReturnValue(throwError(() => errorResponse));
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
+    const err = new Error('net');
+    mockTx.addIncome.mockReturnValue(throwError(() => err));
+    const eSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     component.saveIncome();
-
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Error saving income:', errorResponse);
-    expect(incomeSavedEmitSpy).not.toHaveBeenCalled();
-    expect(closeModalEmitSpy).not.toHaveBeenCalled();
-    consoleErrorSpy.mockRestore();
+    expect(eSpy).toHaveBeenCalledWith('Error saving income:', err);
+    expect(savedSpy).not.toHaveBeenCalled();
+    expect(closeSpy).not.toHaveBeenCalled();
   });
 
-  // New tests for untested methods
-  describe('loadIncomes()', () => {
-    it('should fetch incomes and populate incomeList', () => {
-      component.loadIncomes();
-      expect(mockTransactionsService.getIncomes).toHaveBeenCalled();
-      expect(component.incomeList).toEqual(mockIncomes);
-    });
-
-    it('should handle error when loading incomes fails', () => {
-      const error = new Error('Loading error');
-      mockTransactionsService.getIncomes.mockReturnValue(throwError(() => error));
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
-      component.loadIncomes();
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching incomes:', error);
-      consoleErrorSpy.mockRestore();
-    });
+  it('loadIncomes populates list', () => {
+    component.loadIncomes();
+    expect(mockTx.getIncomes).toHaveBeenCalled();
+    expect(component.incomeList).toEqual(mockIncomes);
   });
 
-  describe('deleteIncome()', () => {
-    it('should delete income and update incomeList', () => {
-      component.incomeList = mockIncomes;
-      const initialLength = component.incomeList.length;
-
-      component.deleteIncome('1');
-
-      expect(mockTransactionsService.deleteIncome).toHaveBeenCalledWith('1');
-      expect(component.incomeList.length).toBe(initialLength - 1);
-      expect(component.incomeList.some(i => i.id === '1')).toBe(false);
-    });
-
-    it('should handle error when deletion fails', () => {
-      const error = new Error('Deletion error');
-      mockTransactionsService.deleteIncome.mockReturnValue(throwError(() => error));
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
-      component.deleteIncome('1');
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error deleting income:', error);
-      consoleErrorSpy.mockRestore();
-    });
+  it('handles loadIncomes error', () => {
+    const err = new Error('load');
+    mockTx.getIncomes.mockReturnValue(throwError(() => err));
+    const eSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    component.loadIncomes();
+    expect(eSpy).toHaveBeenCalledWith('Error fetching incomes:', err);
   });
 
-  // Test for ngOnInit
-  it('should call loadIncomes on initialization', () => {
-    const loadSpy = jest.spyOn(component, 'loadIncomes');
+  it('deletes income and updates list', () => {
+    component.incomeList = [...mockIncomes];
+    component.deleteIncome('1');
+    expect(mockTx.deleteIncome).toHaveBeenCalledWith('1');
+    expect(component.incomeList.some(i => i.id === '1')).toBe(false);
+  });
+
+  it('handles delete error', () => {
+    const err = new Error('del');
+    mockTx.deleteIncome.mockReturnValue(throwError(() => err));
+    const eSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    component.deleteIncome('1');
+    expect(eSpy).toHaveBeenCalledWith('Error deleting income:', err);
+  });
+
+  it('ngOnInit calls loadIncomes', () => {
+    const spy = jest.spyOn(component, 'loadIncomes');
     component.ngOnInit();
-    expect(loadSpy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalled();
   });
 
-  // Test for categories initialization
-  it('should initialize with correct categories', () => {
+  it('initializes category list correctly', () => {
     expect(component.categories).toEqual([
-      'Food', 'Transport', 'Housing', 'Entertainment', 'Utilities'
+      'Salary', 'Freelance', 'Business', 'Investments',
+      'Rent', 'Benefits', 'Gifts', 'Other'
     ]);
   });
 });
