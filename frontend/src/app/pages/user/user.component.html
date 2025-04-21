@@ -1,0 +1,120 @@
+<app-side-nav></app-side-nav>
+<div class="user-profile-container">
+    <!-- Loading state -->
+    <div *ngIf="!user.id" class="loading-state">
+        <div class="loader"></div>
+        <p>Loading profile...</p>
+    </div>
+    
+    <!-- User Info Section -->
+    <div *ngIf="user.id" class="profile-card">
+        <div class="profile-header">
+            <h1 class="welcome-message">Welcome, {{ user.fullName }}!</h1>
+            <h2 class="profile-title">User Profile</h2>
+            <div class="decorative-line"></div>
+        </div>
+
+        <div class="profile-info">
+            <div class="info-item">
+                <span class="info-label">Username</span>
+                <p class="info-value">{{ user.username }}</p>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Full Name</span>
+                <p class="info-value">{{ user.fullName }}</p>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Email Address</span>
+                <p class="info-value">{{ user.email }}</p>
+            </div>
+        </div>
+
+        <!-- Settings Toggle Button -->
+        <div class="settings-toggle">
+            <button class="settings-button" (click)="toggleSettings()">
+                {{ showSettings ? 'Close Settings' : 'Edit Settings' }}
+            </button>
+        </div>
+
+        <!-- Settings Section -->
+        <div *ngIf="showSettings" class="settings-section">
+            <div class="settings-header">
+                <h2>Account Settings</h2>
+            </div>
+
+            <!-- Messages -->
+            <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+            <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+
+            <!-- Change Username Form -->
+            <div class="settings-form">
+                <h3>Change Username</h3>
+                <div class="form-group">
+                    <label for="username">New Username</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        [(ngModel)]="usernameForm.username"
+                        placeholder="Enter new username"
+                    >
+                </div>
+                <button class="submit-button" (click)="updateUsername()">Update Username</button>
+            </div>
+
+            <!-- Change Email Form -->
+            <div class="settings-form">
+                <h3>Change Email</h3>
+                <div class="form-group">
+                    <label for="email">New Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        [(ngModel)]="emailForm.email"
+                        placeholder="Enter new email"
+                    >
+                </div>
+                <button class="submit-button" (click)="updateEmail()">Update Email</button>
+            </div>
+
+            <!-- Change Password Form -->
+            <div class="settings-form">
+                <h3>Change Password</h3>
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input 
+                        type="password" 
+                        id="currentPassword" 
+                        [(ngModel)]="passwordForm.currentPassword"
+                        placeholder="Enter current password"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input 
+                        type="password" 
+                        id="newPassword" 
+                        [(ngModel)]="passwordForm.newPassword"
+                        placeholder="Enter new password"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewPassword">Confirm New Password</label>
+                    <input 
+                        type="password" 
+                        id="confirmNewPassword" 
+                        [(ngModel)]="passwordForm.confirmNewPassword"
+                        placeholder="Confirm new password"
+                    >
+                </div>
+                <button class="submit-button" (click)="updatePassword()">Update Password</button>
+            </div>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="logout-section">
+            <button class="logout-button" (click)="logout()">Logout</button>
+        </div>
+    </div>
+</div>
