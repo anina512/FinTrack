@@ -38,6 +38,7 @@ export class UserComponent implements OnInit {
 
   ngOnInit(): void {
     this.loggedInUserId = this.authService.getUserId();
+    console.log(this.loggedInUserId)
     if (this.loggedInUserId) {
       this.fetchUserData();
     }
@@ -46,6 +47,7 @@ export class UserComponent implements OnInit {
   fetchUserData(): void {
     this.transactionService.getUser(this.loggedInUserId).subscribe({
       next: (data) => {
+        console.log(data)
         this.user = data;
         this.usernameForm.username = data.username;
         this.emailForm.email = data.email;

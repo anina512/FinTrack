@@ -11,7 +11,7 @@ import (
 	"os"
 	"strings"
 	"time"
-
+	"strconv"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -126,7 +126,7 @@ func main() {
 	router.GET("/incomes", GetIncomes)
 	router.DELETE("/incomes/:id", DeleteIncome)
 	router.PUT("/expenses/:id/paid", UpdateExpenseStatus)
-	router.GET("/users", GetUser)
+	router.GET("/users/:id", GetUser)
 	router.PUT("/users/:id/username", UpdateUsername)
 	router.PUT("/users/:id/password", UpdatePassword)
 	router.PUT("/users/:id/email", UpdateEmail)
@@ -271,130 +271,143 @@ func LoginUser(c *gin.Context) {
 }
 
 func GetUser(c *gin.Context) {
-	userID := c.Param("id")
-
-	var user User
-	if err := db.First(&user, userID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
+	// parse URL param
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+	  c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	  return
 	}
-
-	// Don't return the password
+  
+	var user User
+	if err := db.First(&user, id).Error; err != nil {
+	  c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+	  return
+	}
+  
 	user.Password = ""
 	c.JSON(http.StatusOK, user)
-}
-
-func UpdateUsername(c *gin.Context) {
-	userID := c.Param("id")
-	var input struct {
-		Username string `json:"username"`
+  }
+  
+  func UpdateUsername(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+	  c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	  return
 	}
-
+  
+	var input struct{ Username string `json:"username"` }
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
-		return
+	  c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+	  return
 	}
-
+  
+	// load the target user
 	var user User
-	if err := db.First(&user, userID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
+	if err := db.First(&user, id).Error; err != nil {
+	  c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+	  return
 	}
-
-	var existingUser User
-	if err := db.Where("username = ? AND id != ?", input.Username, userID).First(&existingUser).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
-		return
+  
+	// ensure no one else uses this username
+	var other User
+	if err := db.Where("username = ? AND id <> ?", input.Username, id).
+				  First(&other).Error; err == nil {
+	  c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
+	  return
 	}
-
+  
 	user.Username = input.Username
 	if err := db.Save(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update username"})
-		return
+	  c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update username"})
+	  return
 	}
-
+  
 	user.Password = ""
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Username updated successfully",
-		"user":    user,
-	})
-}
-
-func UpdatePassword(c *gin.Context) {
-	userID := c.Param("id")
-	var input struct {
-		CurrentPassword string `json:"currentPassword"`
-		NewPassword     string `json:"newPassword"`
-	}
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
-		return
-	}
-
-	var user User
-	if err := db.First(&user, userID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
-	}
-
-	// Verify current password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.CurrentPassword)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Current password is incorrect"})
-		return
-	}
-
-	// Hash new password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	c.JSON(http.StatusOK, gin.H{"message": "Username updated successfully", "user": user})
+  }
+  
+  func UpdatePassword(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
-		return
+	  c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	  return
 	}
-
-	user.Password = string(hashedPassword)
-	if err := db.Save(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
-}
-
-func UpdateEmail(c *gin.Context) {
-	userID := c.Param("id")
+  
 	var input struct {
-		Email string `json:"email"`
+	  CurrentPassword string `json:"currentPassword"`
+	  NewPassword     string `json:"newPassword"`
 	}
-
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
-		return
+	  c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+	  return
 	}
-
+  
 	var user User
-	if err := db.First(&user, userID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
+	if err := db.First(&user, id).Error; err != nil {
+	  c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+	  return
 	}
-
-	var existingUser User
-	if err := db.Where("email = ? AND id != ?", input.Email, userID).First(&existingUser).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
-		return
+  
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.CurrentPassword)); err != nil {
+	  c.JSON(http.StatusUnauthorized, gin.H{"error": "Current password is incorrect"})
+	  return
 	}
-
+  
+	hashed, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+	  c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash new password"})
+	  return
+	}
+  
+	user.Password = string(hashed)
+	if err := db.Save(&user).Error; err != nil {
+	  c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
+	  return
+	}
+  
+	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
+  }
+  
+  func UpdateEmail(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+	  c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	  return
+	}
+  
+	var input struct{ Email string `json:"email"` }
+	if err := c.ShouldBindJSON(&input); err != nil {
+	  c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+	  return
+	}
+  
+	var user User
+	if err := db.First(&user, id).Error; err != nil {
+	  c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+	  return
+	}
+  
+	var other User
+	if err := db.Where("email = ? AND id <> ?", input.Email, id).
+				  First(&other).Error; err == nil {
+	  c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
+	  return
+	}
+  
 	user.Email = input.Email
 	if err := db.Save(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update email"})
-		return
+	  c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update email"})
+	  return
 	}
-
+  
 	user.Password = ""
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Email updated successfully",
-		"user":    user,
-	})
-}
+	c.JSON(http.StatusOK, gin.H{"message": "Email updated successfully", "user": user})
+  }
+  
 
 func AddExpense(c *gin.Context) {
 	var expense Expense
