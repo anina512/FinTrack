@@ -148,6 +148,9 @@ import { Chart } from 'chart.js'
 
 describe('DashboardComponent', () => {
   let comp: DashboardComponent
+  let logSpy: jest.SpyInstance
+  let errSpy: jest.SpyInstance
+
   const newComp = () =>
     new DashboardComponent(
       new MockCDR() as any,
@@ -160,6 +163,11 @@ describe('DashboardComponent', () => {
       mockRouter,
       'browser',
     )
+
+  beforeAll(() => {
+    logSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+    errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -249,8 +257,10 @@ describe('DashboardComponent', () => {
     mockTx.getExpenses.mockReturnValue(of([mkExpense(20, 'Food', d.toISOString())]))
     comp.fetchWeeklyExpenses(5)
     expect(comp.weeklyExpensesChart.update).toHaveBeenCalled()
+
     mockTx.getExpenses.mockReturnValue(throwError(() => new Error('x')))
     comp.fetchWeeklyExpenses(5)
+    expect(errSpy).toHaveBeenCalledWith('Error fetching weekly expenses:', expect.any(Error))
   })
 
   it('fetchIncomeData totals and chart update', () => {
@@ -343,7 +353,7 @@ describe('DashboardComponent', () => {
   })
 })
 
-describe('DashboardComponent', () => {
+describe('DashboardComponent - remaining methods', () => {
   const mk = () => new DashboardComponent(
     new MockCDR() as any,
     new MockExpense() as any,

@@ -22,18 +22,18 @@ describe('UserComponent (stand-alone)', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UserComponent], // standalone component
+      imports: [UserComponent],
       schemas: [NO_ERRORS_SCHEMA]
     })
-      .overrideComponent(UserComponent, {
-        set: {
-          providers: [
-            { provide: AuthService, useValue: mockAuthService },
-            { provide: TransactionsService, useValue: mockTx }
-          ]
-        }
-      })
-      .compileComponents();
+    .overrideComponent(UserComponent, {
+      set: {
+        providers: [
+          { provide: AuthService, useValue: mockAuthService },
+          { provide: TransactionsService, useValue: mockTx }
+        ]
+      }
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(UserComponent);
     comp = fixture.componentInstance;
@@ -74,6 +74,7 @@ describe('UserComponent (stand-alone)', () => {
     expect(comp.user).toEqual(apiUser);
     expect(comp.usernameForm.username).toBe(apiUser.username);
     expect(comp.emailForm.email).toBe(apiUser.email);
+    expect(comp.errorMessage).toBe('');
   });
 
   it('fetchUserData logs error on failure', () => {
@@ -176,6 +177,17 @@ describe('UserComponent (stand-alone)', () => {
     expect(comp.successMessage).toBe('');
   });
 
+  it('updateUsername fallback error message on unknown error', () => {
+    comp.loggedInUserId = 1;
+    comp.usernameForm.username = 'newuser';
+    mockTx.updateUsername.mockReturnValue(throwError(() => ({})));
+
+    comp.updateUsername();
+
+    expect(comp.errorMessage).toBe('Failed to update username');
+    expect(comp.successMessage).toBe('');
+  });
+
   it('updateEmail updates user on success', () => {
     comp.loggedInUserId = 1;
     comp.user = { id: 1, email: 'test@example.com' };
@@ -196,7 +208,6 @@ describe('UserComponent (stand-alone)', () => {
     comp.updateEmail();
     expect(mockTx.updateEmail).not.toHaveBeenCalled();
     expect(comp.errorMessage).toBe('Please enter a valid email address');
-    expect(comp.successMessage).toBe('');
 
     comp.emailForm.email = '';
     comp.updateEmail();
@@ -213,6 +224,17 @@ describe('UserComponent (stand-alone)', () => {
 
     expect(mockTx.updateEmail).toHaveBeenCalledWith(1, { email: 'newemail@example.com' });
     expect(comp.errorMessage).toBe('Email already registered');
+    expect(comp.successMessage).toBe('');
+  });
+
+  it('updateEmail fallback error message on unknown error', () => {
+    comp.loggedInUserId = 1;
+    comp.emailForm.email = 'newemail@example.com';
+    mockTx.updateEmail.mockReturnValue(throwError(() => ({})));
+
+    comp.updateEmail();
+
+    expect(comp.errorMessage).toBe('Failed to update email');
     expect(comp.successMessage).toBe('');
   });
 
@@ -280,4 +302,20 @@ describe('UserComponent (stand-alone)', () => {
     expect(comp.errorMessage).toBe('Incorrect current password');
     expect(comp.successMessage).toBe('');
   });
+
+  it('updatePassword fallback error message on unknown error', () => {
+    comp.loggedInUserId = 1;
+    comp.passwordForm = {
+      currentPassword: 'oldpassword',
+      newPassword: 'newpassword',
+      confirmNewPassword: 'newpassword'
+    };
+    mockTx.updatePassword.mockReturnValue(throwError(() => ({})));
+
+    comp.updatePassword();
+
+    expect(comp.errorMessage).toBe('Failed to update password');
+    expect(comp.successMessage).toBe('');
+  });
+
 });
