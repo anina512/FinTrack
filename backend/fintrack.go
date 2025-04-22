@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 	"time"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -90,7 +91,7 @@ func initEnv() {
 
 func initDB() {
 	var err error
-	dsn := "host=localhost user=postgres password=root dbname=fintrack port=5432 sslmode=disable"
+	dsn := "host=localhost user=postgres password=Pavan@257 dbname=fintrack port=5432 sslmode=disable"
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -126,6 +127,9 @@ func main() {
 	router.DELETE("/incomes/:id", DeleteIncome)
 	router.PUT("/expenses/:id/paid", UpdateExpenseStatus)
 	router.GET("/users", GetUser)
+	router.PUT("/users/:id/username", UpdateUsername)
+	router.PUT("/users/:id/password", UpdatePassword)
+	router.PUT("/users/:id/email", UpdateEmail)
 
 	router.Run(":8080")
 }
@@ -278,6 +282,118 @@ func GetUser(c *gin.Context) {
 	// Don't return the password
 	user.Password = ""
 	c.JSON(http.StatusOK, user)
+}
+
+func UpdateUsername(c *gin.Context) {
+	userID := c.Param("id")
+	var input struct {
+		Username string `json:"username"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	var user User
+	if err := db.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	var existingUser User
+	if err := db.Where("username = ? AND id != ?", input.Username, userID).First(&existingUser).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
+		return
+	}
+
+	user.Username = input.Username
+	if err := db.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update username"})
+		return
+	}
+
+	user.Password = ""
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Username updated successfully",
+		"user":    user,
+	})
+}
+
+func UpdatePassword(c *gin.Context) {
+	userID := c.Param("id")
+	var input struct {
+		CurrentPassword string `json:"currentPassword"`
+		NewPassword     string `json:"newPassword"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	var user User
+	if err := db.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Verify current password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.CurrentPassword)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Current password is incorrect"})
+		return
+	}
+
+	// Hash new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
+	user.Password = string(hashedPassword)
+	if err := db.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
+}
+
+func UpdateEmail(c *gin.Context) {
+	userID := c.Param("id")
+	var input struct {
+		Email string `json:"email"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	var user User
+	if err := db.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	var existingUser User
+	if err := db.Where("email = ? AND id != ?", input.Email, userID).First(&existingUser).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
+		return
+	}
+
+	user.Email = input.Email
+	if err := db.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update email"})
+		return
+	}
+
+	user.Password = ""
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Email updated successfully",
+		"user":    user,
+	})
 }
 
 func AddExpense(c *gin.Context) {

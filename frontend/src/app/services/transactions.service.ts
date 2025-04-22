@@ -57,4 +57,16 @@ export class TransactionsService {
     const params = new HttpParams().set('user_id', userId); 
     return this.http.get(`${this.baseUrl}/users`, { params });
   }
+  //Method to update username
+  updateUsername(userId: any, data: { username: string }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/users/${userId}/username`, data);
+  }
+  //Method to update password
+  updatePassword(userId: any, data: { currentPassword: string, newPassword: string }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/users/${userId}/password`, data);
+  }
+  //Method to update email
+  updateEmail(userId: any, data: { email: string }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/users/${userId}/email`, data);
+  }
 }
