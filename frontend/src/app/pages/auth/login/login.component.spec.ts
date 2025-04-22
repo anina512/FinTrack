@@ -1,4 +1,3 @@
-// login.component.spec.ts
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { LoginComponent } from './login.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -14,20 +13,24 @@ describe('LoginComponent', () => {
 
   beforeEach(async () => {
     routerNavigate = jest.fn();
-    authService = { login: jest.fn() };
+    authService    = { login: jest.fn() };
+
+    // Stub out all console.log / console.error calls
+    jest.spyOn(console, 'log'  ).mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent, NoopAnimationsModule]
     })
-      .overrideComponent(LoginComponent, {
-        set: {
-          providers: [
-            { provide: AuthService, useValue: authService },
-            { provide: Router, useValue: { navigate: routerNavigate } }
-          ]
-        }
-      })
-      .compileComponents();
+    .overrideComponent(LoginComponent, {
+      set: {
+        providers: [
+          { provide: AuthService, useValue: authService },
+          { provide: Router,      useValue: { navigate: routerNavigate } }
+        ]
+      }
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
@@ -60,7 +63,9 @@ describe('LoginComponent', () => {
   }));
 
   it('should set specific errorMessage on login error', fakeAsync(() => {
-    authService.login.mockReturnValue(throwError(() => ({ error: { error: 'Invalid' } })));
+    authService.login.mockReturnValue(
+      throwError(() => ({ error: { error: 'Invalid' } }))
+    );
     component.loginForm.setValue({ email: 'a@b.c', password: '123456' });
     component.onSubmit();
     tick();
@@ -69,7 +74,9 @@ describe('LoginComponent', () => {
   }));
 
   it('should fallback to default errorMessage when backend gives none', fakeAsync(() => {
-    authService.login.mockReturnValue(throwError(() => ({ error: {} })));
+    authService.login.mockReturnValue(
+      throwError(() => ({ error: {} }))
+    );
     component.loginForm.setValue({ email: 'a@b.c', password: '123456' });
     component.onSubmit();
     tick();
