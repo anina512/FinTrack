@@ -54,8 +54,7 @@ export class TransactionsService {
     return this.http.put(`${this.baseUrl}/expenses/${expense.id}/paid`, expense);
   }
   getUser(userId:any): Observable<any> {
-    const params = new HttpParams().set('user_id', userId); 
-    return this.http.get(`${this.baseUrl}/users`, { params });
+    return this.http.get(`${this.baseUrl}/users/${userId}`);
   }
   //Method to update username
   updateUsername(userId: any, data: { username: string }): Observable<any> {
