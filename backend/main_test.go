@@ -37,17 +37,30 @@ func setupRouter() *gin.Engine {
 	r := gin.New()
 	r.POST("/register", RegisterUser)
 	r.POST("/login", LoginUser)
+
 	r.POST("/expenses", AddExpense)
 	r.GET("/expenses", GetExpenses)
 	r.DELETE("/expenses/:id", DeleteExpense)
 	r.PUT("/expenses/:id/paid", UpdateExpenseStatus)
+
 	r.GET("/users/:id", GetUser)
+	// new user‑update routes
+	r.PUT("/users/:id/username", UpdateUsername)
+	r.PUT("/users/:id/password", UpdatePassword)
+	r.PUT("/users/:id/email", UpdateEmail)
+
 	r.POST("/incomes", AddIncome)
 	r.GET("/incomes", GetIncomes)
 	r.DELETE("/incomes/:id", DeleteIncome)
+
 	r.POST("/budget", SetBudget)
 	r.GET("/budget", GetBudgetDetails)
 	r.DELETE("/budget/:id", DeleteBudget)
+
+	// OAuth routes
+	r.GET("/login/google", StartGoogleLogin)
+	r.GET("/oauth2/callback", HandleGoogleCallback)
+
 	return r
 }
 
@@ -450,4 +463,150 @@ func TestInitEnvLoads_(t *testing.T) {
 	assert.Equal(t, "AAA", oauthConf.ClientID)
 	assert.Equal(t, "BBB", oauthConf.ClientSecret)
 	assert.Equal(t, "ZZZ", string(jwtKey))
+}
+
+// --- New user‑update endpoint tests ---
+
+func TestUpdateUsernameEndpoint(t *testing.T) {
+	setupTestDB()
+	r := setupRouter()
+
+	// bad ID
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("PUT", "/users/abc/username", bytes.NewBufferString(`{"username":"x"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// invalid JSON
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/1/username", bytes.NewBufferString(`{bad}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// user not found
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/999/username", bytes.NewBufferString(`{"username":"x"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
+	// duplicate username
+	db.Create(&User{FullName: "A", Username: "u1", Email: "a@x.com", Password: "p"})
+	db.Create(&User{FullName: "B", Username: "u2", Email: "b@x.com", Password: "p"})
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/2/username", bytes.NewBufferString(`{"username":"u1"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusConflict, w.Code)
+
+	// success
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/1/username", bytes.NewBufferString(`{"username":"newname"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, "Username updated successfully", resp["message"])
+	user := resp["user"].(map[string]interface{})
+	assert.Equal(t, "newname", user["username"])
+	assert.Empty(t, user["password"])
+}
+
+func TestUpdatePasswordEndpoint(t *testing.T) {
+	setupTestDB()
+	r := setupRouter()
+
+	// bad ID
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("PUT", "/users/abc/password", bytes.NewBufferString(`{"currentPassword":"a","newPassword":"b"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// invalid JSON
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/1/password", bytes.NewBufferString(`{bad}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// user not found
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/999/password", bytes.NewBufferString(`{"currentPassword":"x","newPassword":"y"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
+	// wrong current password
+	hashed, _ := bcrypt.GenerateFromPassword([]byte("right"), bcrypt.DefaultCost)
+	db.Create(&User{FullName: "T", Username: "u", Email: "e@x.com", Password: string(hashed)})
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/1/password", bytes.NewBufferString(`{"currentPassword":"wrong","newPassword":"newpass"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+	// success
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/1/password", bytes.NewBufferString(`{"currentPassword":"right","newPassword":"newpass"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var resp map[string]string
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, "Password updated successfully", resp["message"])
+}
+
+func TestUpdateEmailEndpoint(t *testing.T) {
+	setupTestDB()
+	r := setupRouter()
+
+	// bad ID
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("PUT", "/users/abc/email", bytes.NewBufferString(`{"email":"x@x.com"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// invalid JSON
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/1/email", bytes.NewBufferString(`{bad}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// user not found
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/999/email", bytes.NewBufferString(`{"email":"x@x.com"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
+	// duplicate email
+	db.Create(&User{FullName: "A", Username: "u1", Email: "a@x.com", Password: "p"})
+	db.Create(&User{FullName: "B", Username: "u2", Email: "b@x.com", Password: "p"})
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/2/email", bytes.NewBufferString(`{"email":"a@x.com"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusConflict, w.Code)
+
+	// success
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("PUT", "/users/1/email", bytes.NewBufferString(`{"email":"new@x.com"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, "Email updated successfully", resp["message"])
+	user := resp["user"].(map[string]interface{})
+	assert.Equal(t, "new@x.com", user["email"])
+	assert.Empty(t, user["password"])
 }
