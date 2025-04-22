@@ -138,15 +138,52 @@ describe('TransactionsService', () => {
     req.flush(null);
   });
 
-  /* ────────────────  User  ─────────────── */
-  it('getUser ⇒ GET /users?user_id', () => {
+   /* ────────────────  User  ─────────────── */
+   it('getUser ⇒ GET /users/:id', () => {
     const userId = 3;
     const mock   = { id: 3, name: 'Alice' };
 
     service.getUser(userId).subscribe(r => expect(r).toEqual(mock));
 
-    const req = httpMock.expectOne(`${baseUrl}/users?user_id=${userId}`);
+    const req = httpMock.expectOne(`${baseUrl}/users/${userId}`);
     expect(req.request.method).toBe('GET');
     req.flush(mock);
   });
+
+  it('updateUsername ⇒ PUT /users/:id/username', () => {
+    const userId = 5;
+    const data   = { username: 'newUser' };
+
+    service.updateUsername(userId, data).subscribe(r => expect(r).toEqual(data));
+
+    const req = httpMock.expectOne(`${baseUrl}/users/${userId}/username`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(data);
+    req.flush(data);
+  });
+
+  it('updatePassword ⇒ PUT /users/:id/password', () => {
+    const userId = 5;
+    const data   = { currentPassword: 'oldPass', newPassword: 'newPass' };
+
+    service.updatePassword(userId, data).subscribe(r => expect(r).toEqual(data));
+
+    const req = httpMock.expectOne(`${baseUrl}/users/${userId}/password`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(data);
+    req.flush(data);
+  });
+
+  it('updateEmail ⇒ PUT /users/:id/email', () => {
+    const userId = 6;
+    const data   = { email: 'test@example.com' };
+
+    service.updateEmail(userId, data).subscribe(r => expect(r).toEqual(data));
+
+    const req = httpMock.expectOne(`${baseUrl}/users/${userId}/email`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(data);
+    req.flush(data);
+  });
+
 });

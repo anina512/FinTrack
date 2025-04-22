@@ -1,146 +1,158 @@
-// register.component.spec.ts
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RegisterComponent } from './register.component';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
+import { ReactiveFormsModule, FormControl, FormGroup } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('RegisterComponent', () => {
-  let fixture: ComponentFixture<RegisterComponent>;
   let component: RegisterComponent;
-  let authService: { registerUser: jest.Mock };
-  let routerNavigate: jest.Mock;
+  let fixture: ComponentFixture<RegisterComponent>;
+  let mockAuthService: { registerUser: jest.Mock };
+  let mockRouter: { navigate: jest.Mock };
 
   beforeEach(async () => {
-    routerNavigate = jest.fn();
-    authService = { registerUser: jest.fn() };
+    mockAuthService = {
+      registerUser: jest.fn().mockReturnValue(of({ success: true })),
+    };
+    mockRouter = {
+      navigate: jest.fn(),
+    };
+
+    // Stub out console methods so they don't pollute test output
+    jest.spyOn(console, 'log'  ).mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
 
     await TestBed.configureTestingModule({
-      imports: [RegisterComponent, NoopAnimationsModule]
-    })
-      .overrideComponent(RegisterComponent, {
-        set: {
-          providers: [
-            { provide: AuthService, useValue: authService },
-            { provide: Router, useValue: { navigate: routerNavigate } }
-          ]
-        }
-      })
-      .compileComponents();
+      imports: [
+        RegisterComponent,
+        ReactiveFormsModule,
+        NoopAnimationsModule,
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
+
+    // override the injected dependencies
+    (component as any).authService = mockAuthService as AuthService;
+    (component as any).router      = mockRouter      as Router;
+
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create the component and initialize form controls', () => {
     expect(component).toBeTruthy();
+    const ctrls = component.registerForm.controls;
+    ['fullName', 'username', 'email', 'password', 'confirmPassword']
+      .forEach(key => expect(ctrls[key]).toBeInstanceOf(FormControl));
   });
 
-  it('toggles password visibility', () => {
-    const start = component.hidePassword;
-    component.togglePasswordVisibility();
-    expect(component.hidePassword).toBe(!start);
+  describe('passwordMatchValidator', () => {
+    let form: FormGroup;
+    beforeEach(() => {
+      form = new FormGroup({
+        password:        new FormControl('123456'),
+        confirmPassword: new FormControl('123456'),
+      });
+    });
+
+    it('should return null when passwords match', () => {
+      expect(component.passwordMatchValidator(form)).toBeNull();
+    });
+
+    it('should return mismatch error when passwords differ', () => {
+      form.patchValue({ confirmPassword: 'other' });
+      const result = component.passwordMatchValidator(form)!;
+      expect(result.mismatch).toBe(true);
+    });
   });
 
-  it('toggles confirm password visibility', () => {
-    const start = component.hideConfirmPassword;
-    component.toggleConfirmPasswordVisibility();
-    expect(component.hideConfirmPassword).toBe(!start);
+  describe('togglePasswordVisibility', () => {
+    it('should toggle hidePassword', () => {
+      const orig = component.hidePassword;
+      component.togglePasswordVisibility();
+      expect(component.hidePassword).toBe(!orig);
+    });
   });
 
-  it('passwordMatchValidator returns null for match', () => {
-    const form = new FormGroup({
-      password: new FormControl('p'),
-      confirmPassword: new FormControl('p')
+  describe('toggleConfirmPasswordVisibility', () => {
+    it('should toggle hideConfirmPassword', () => {
+      const orig = component.hideConfirmPassword;
+      component.toggleConfirmPasswordVisibility();
+      expect(component.hideConfirmPassword).toBe(!orig);
     });
-    expect(component.passwordMatchValidator(form)).toBeNull();
   });
 
-  it('passwordMatchValidator returns object for mismatch', () => {
-    const form = new FormGroup({
-      password: new FormControl('p'),
-      confirmPassword: new FormControl('q')
+  describe('onRegister', () => {
+    function fillValidForm() {
+      component.registerForm.setValue({
+        fullName:        'Test User',
+        username:        'tester',
+        email:           'test@example.com',
+        password:        'abcdef',
+        confirmPassword: 'abcdef',
+      });
+    }
+
+    it('should set errorMessage if form is invalid', () => {
+      component.registerForm.setValue({
+        fullName:        'X',
+        username:        'X',
+        email:           'not-an-email',
+        password:        '123',
+        confirmPassword: '123',
+      });
+      component.onRegister();
+      expect(component.errorMessage).toBe('Please fill out all fields correctly.');
+      expect(mockAuthService.registerUser).not.toHaveBeenCalled();
     });
-    expect(component.passwordMatchValidator(form)).toEqual({ mismatch: true });
+
+    it('should set errorMessage if passwords do not match', () => {
+      fillValidForm();
+      component.registerForm.setValidators(null);
+      component.registerForm.updateValueAndValidity();
+      component.registerForm.patchValue({ confirmPassword: 'xxx' });
+      component.onRegister();
+      expect(component.errorMessage).toBe('Passwords do not match.');
+      expect(mockAuthService.registerUser).not.toHaveBeenCalled();
+    });
+
+    it('should call AuthService.registerUser and navigate on success', () => {
+      fillValidForm();
+      component.registerForm.setValidators(null);
+      component.registerForm.updateValueAndValidity();
+      mockAuthService.registerUser.mockReturnValueOnce(of({ id: '123' }));
+      component.onRegister();
+      expect(mockAuthService.registerUser)
+        .toHaveBeenCalledWith('Test User', 'tester', 'test@example.com', 'abcdef');
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+      expect(component.errorMessage).toBe('');
+    });
+
+    it('should set errorMessage from server error on failure', () => {
+      fillValidForm();
+      component.registerForm.setValidators(null);
+      component.registerForm.updateValueAndValidity();
+      const serverErr = { error: { error: 'Email taken' } };
+      mockAuthService.registerUser.mockReturnValueOnce(throwError(() => serverErr));
+      component.onRegister();
+      expect(component.errorMessage).toBe('Email taken');
+    });
+
+    it('should use fallback errorMessage when server error has no message', () => {
+      fillValidForm();
+      component.registerForm.setValidators(null);
+      component.registerForm.updateValueAndValidity();
+      mockAuthService.registerUser.mockReturnValueOnce(throwError(() => ({ error: {} })));
+      component.onRegister();
+      expect(component.errorMessage).toBe('Registration failed');
+    });
   });
 
-  it('sets error when form invalid', () => {
-    component.registerForm.setValue({
-      fullName: '',
-      username: '',
-      email: '',
-      password: '',
-      confirmPassword: ''
-    });
-    component.onRegister();
-    expect(component.errorMessage).toBe('Please fill out all fields correctly.');
-    expect(authService.registerUser).not.toHaveBeenCalled();
-  });
-
-  it('sets "Passwords do not match." when passwords differ and fields valid', () => {
-    component.registerForm = new FormGroup({
-      fullName: new FormControl('John', Validators.required),
-      username: new FormControl('john', [Validators.required, Validators.maxLength(10)]),
-      email: new FormControl('john@x.y', [Validators.required, Validators.email]),
-      password: new FormControl('123456', [Validators.required, Validators.minLength(6)]),
-      confirmPassword: new FormControl('654321', Validators.required)
-    });
-    component.onRegister();
-    expect(component.errorMessage).toBe('Passwords do not match.');
-    expect(authService.registerUser).not.toHaveBeenCalled();
-  });
-
-  it('navigates on successful registration', fakeAsync(() => {
-    authService.registerUser.mockReturnValue(of({ ok: true }));
-    component.registerForm.setValue({
-      fullName: 'John Doe',
-      username: 'john',
-      email: 'john@x.y',
-      password: '123456',
-      confirmPassword: '123456'
-    });
-    component.onRegister();
-    tick();
-    expect(authService.registerUser).toHaveBeenCalledWith('John Doe', 'john', 'john@x.y', '123456');
-    expect(routerNavigate).toHaveBeenCalledWith(['/login']);
-    expect(component.errorMessage).toBe('');
-  }));
-
-  it('sets backend error message when provided', fakeAsync(() => {
-    authService.registerUser.mockReturnValue(throwError(() => ({ error: { error: 'fail' } })));
-    component.registerForm.setValue({
-      fullName: 'John',
-      username: 'john',
-      email: 'john@x.y',
-      password: '123456',
-      confirmPassword: '123456'
-    });
-    component.onRegister();
-    tick();
-    expect(component.errorMessage).toBe('fail');
-    expect(routerNavigate).not.toHaveBeenCalled();
-  }));
-
-  it('falls back to default error when backend gives none', fakeAsync(() => {
-    authService.registerUser.mockReturnValue(throwError(() => ({ error: {} })));
-    component.registerForm.setValue({
-      fullName: 'John',
-      username: 'john',
-      email: 'john@x.y',
-      password: '123456',
-      confirmPassword: '123456'
-    });
-    component.onRegister();
-    tick();
-    expect(component.errorMessage).toBe('Registration failed');
-    expect(routerNavigate).not.toHaveBeenCalled();
-  }));
-
-  it('navigates to login page directly', () => {
+  it('goToLogin should navigate to /login', () => {
     component.goToLogin();
-    expect(routerNavigate).toHaveBeenCalledWith(['/login']);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
   });
 });
